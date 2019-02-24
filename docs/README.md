@@ -83,7 +83,7 @@ just templating
         list: function() {
           return `
             <ul>
-              ${mylist.map(color => '<li>${color}</li>')}
+              \${mylist.map(color => '<li>\${color}</li>')}
             </ul>
           `;
         }
