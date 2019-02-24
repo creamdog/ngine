@@ -112,14 +112,25 @@ const $ngine = {
 
 	},
 	render : function(url, model, callback, state) {
-		let id = (100000 + Math.floor(Math.random() * 100000)) + '_' + new Date().getTime();
-		var req = new XMLHttpRequest();
 
-		req.addEventListener('load', function(req) {
-			
-			const template = req.target.responseText;
-			const id = req.target.id;
-			const getModel = state && state.model ? function(c) { c(state.model); } : (typeof model == 'function' ? function(c){ model(c); } : function(c) { c(model); });
+		const id = (100000 + Math.floor(Math.random() * 100000)) + '_' + new Date().getTime();
+
+		const load = (url, callback) => {	
+			const req = new XMLHttpRequest();
+			req.addEventListener('load', function(req) {
+				const template = req.target.responseText;
+				const id = req.target.id;
+				return callback(template, id);
+			});
+			req.id = id;
+			req.open('GET', url);
+			req.send();
+		}
+
+		const getTemplate = typeof url == 'function' ? (callback) => url(template => callback(template, id)) : (callback) => load(url, callback);
+		const getModel = state && state.model ? function(c) { c(state.model); } : (typeof model == 'function' ? function(c){ model(c); } : function(c) { c(model); });
+
+		getTemplate((template, id) => {
 
 			$ngine.cache[id] = {url: url, elements:[], model:model};
 
@@ -175,10 +186,9 @@ const $ngine = {
 				}
 
 			});
+
 		});
-		req.id = id;
-		req.open('GET', url);
-		req.send();
+
 		return '<div id="' + id + '">loading..</div>';
 	}
 };
