@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "babel src/ngine.js > build/ngine.es2015.js && uglifyjs -c -m -p bare_returns build/ngine.es2015.js > build/ngine.minified.compact.js"
+    "build": "babel src/ngine.js > build/ngine.es2015.js && uglifyjs -c -m -p bare_returns build/ngine.es2015.js > build/tmp.js && echo '/*! Ngine v1.0.0 | (c) Christian Westman | GNU General Public License v3.0 | https://github.com/creamdog/ngine */' > build/ngine.mini.js && cat build/tmp.js >> build/ngine.mini.js && rm build/tmp.js"
   },
   "repository": {
     "type": "git",

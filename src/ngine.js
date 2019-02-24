@@ -1,3 +1,5 @@
+/*! Ngine v1.0.0 | (c) Christian Westman | GNU General Public License v3.0 | https://github.com/creamdog/ngine */
+
 const $ngine = {
 	cache: {},
 	interpolate : function(str, evalFunc, line, state) {
