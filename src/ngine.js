@@ -118,9 +118,9 @@ const $ngine = {
 		const load = (url, callback) => {	
 			const req = new XMLHttpRequest();
 			req.addEventListener('load', function(req) {
-				const template = req.target.responseText;
+				const payload = req.target.responseText;
 				const id = req.target.id;
-				return callback(template, id);
+				return callback(payload, id);
 			});
 			req.id = id;
 			req.open('GET', url);
@@ -128,13 +128,20 @@ const $ngine = {
 		}
 
 		const getTemplate = typeof url == 'function' ? (callback) => url(template => callback(template, id)) : (callback) => load(url, callback);
-		const getModel = state && state.model ? function(c) { c(state.model); } : (typeof model == 'function' ? function(c){ model(c); } : function(c) { c(model); });
+		const getModel = state && state.model ? function(c) { c(state.model); } : (typeof model == 'function' ? function(c){ model(c); } : (typeof model == 'string' ? function(c) { load(model, c); } : function(c) { c(model); } ));
 
 		getTemplate((template, id) => {
+
+			console.log('template', template);
 
 			$ngine.cache[id] = {url: url, elements:[], model:model};
 
 			getModel(function(model){
+
+				model = typeof model == 'string' ? JSON.parse(model) : model;
+				model = model == null ? {} : model;
+				model = Array.isArray(model) ? {list: model} : model;
+
 				const state = {url: url, model: model, getModel: getModel, cache: {}, id: id};
 				model._ngine_template_id_ = id;
 				model._ngine_template_url_ = url;

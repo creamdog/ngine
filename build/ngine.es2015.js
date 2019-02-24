@@ -150,9 +150,9 @@ var $ngine = {
     var load = function load(url, callback) {
       var req = new XMLHttpRequest();
       req.addEventListener('load', function (req) {
-        var template = req.target.responseText;
+        var payload = req.target.responseText;
         var id = req.target.id;
-        return callback(template, id);
+        return callback(payload, id);
       });
       req.id = id;
       req.open('GET', url);
@@ -170,16 +170,24 @@ var $ngine = {
       c(state.model);
     } : typeof model == 'function' ? function (c) {
       model(c);
+    } : typeof model == 'string' ? function (c) {
+      load(model, c);
     } : function (c) {
       c(model);
     };
     getTemplate(function (template, id) {
+      console.log('template', template);
       $ngine.cache[id] = {
         url: url,
         elements: [],
         model: model
       };
       getModel(function (model) {
+        model = typeof model == 'string' ? JSON.parse(model) : model;
+        model = model == null ? {} : model;
+        model = Array.isArray(model) ? {
+          list: model
+        } : model;
         var state = {
           url: url,
           model: model,
