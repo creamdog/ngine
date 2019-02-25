@@ -174,9 +174,11 @@ const $ngine = {
 				}, useState ? state : undefined);
 			});
 
-			let obj = 'function(' + keys.join(',') + '){ return (' + expression + ') }';
-			//console.log('eval', obj);
-			return Function('"use strict";return (' + obj + ')')()( ...params );
+			const obj = 'function(' + keys.join(',') + '){ return (' + expression + ') }';
+			console.log('eval', obj);
+			const result = Function('"use strict";return (' + obj + ')')()( ...params );
+			//console.log('result', result);
+			return result;
 		} catch(e) {
 			console.log({
 				message: e.message,
@@ -204,7 +206,7 @@ const $ngine = {
 
 				//console.log('model', model);
 
-				model = typeof model == 'string' ? JSON.parse(model) : model;
+				model = typeof model == 'string' ? { model: JSON.parse(model) } : model;
 				model = model == null ? {} : model;
 				model = Array.isArray(model) ? {list: model} : model;
 
@@ -262,6 +264,6 @@ const $ngine = {
 
 		});
 
-		return '<div id="' + id + '">loading..</div>';
+		return '<span id="' + id + '">loading..</span>';
 	}
 };

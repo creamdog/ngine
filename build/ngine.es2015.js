@@ -206,9 +206,11 @@ var $ngine = {
           $ngine.apply(target, id, result);
         }, useState ? state : undefined);
       });
-      var obj = 'function(' + keys.join(',') + '){ return (' + expression + ') }'; //console.log('eval', obj);
+      var obj = 'function(' + keys.join(',') + '){ return (' + expression + ') }';
+      console.log('eval', obj);
+      var result = Function('"use strict";return (' + obj + ')')().apply(void 0, _toConsumableArray(params)); //console.log('result', result);
 
-      return Function('"use strict";return (' + obj + ')')().apply(void 0, _toConsumableArray(params));
+      return result;
     } catch (e) {
       console.log({
         message: e.message,
@@ -246,7 +248,9 @@ var $ngine = {
       };
       getModel(function (model) {
         //console.log('model', model);
-        model = typeof model == 'string' ? JSON.parse(model) : model;
+        model = typeof model == 'string' ? {
+          model: JSON.parse(model)
+        } : model;
         model = model == null ? {} : model;
         model = Array.isArray(model) ? {
           list: model
@@ -313,7 +317,7 @@ var $ngine = {
         }
       });
     });
-    return '<div id="' + id + '">loading..</div>';
+    return '<span id="' + id + '">loading..</span>';
   }
 };
 
