@@ -12,16 +12,19 @@
 
 </footer>
 
-<pre><code class="common all">
-    &lt;!DOCTYPE html&gt;
-    &lt;html&gt;
-        &lt;head&gt;
-            &lt;script type="text/javascript" src="${window.location.protocol}//${window.location.host}/build/ngine.min.js"&gt;&lt;/script&gt;
-        &lt;/head&gt;
-        &lt;body onload="$ngine.render('docs/nginjs.com/app.html', {}, 'body')"&gt;
 
-        &lt;/body&gt;
-    &lt;/html&gt;
+<pre><code class="common all">
+${`
+    <!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <script type="text/javascript" src="http://nginjs.com/build/ngine.min.js"></script>
+        </head>
+    
+        <body onload="$ngine.render('docs/nginjs.com/app.html', {}, 'body')"></body>
+    
+    </html>
+`.replace(/[<]/ig, '&lt;').replace(/[>]/ig, '&gt;')}
 
 </code></pre>
 
