@@ -11,60 +11,83 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 /*! Ngine v1.0.0 | (c) Christian Westman | GNU General Public License v3.0 | https://github.com/creamdog/ngine */
 var $ngine = {
   cache: {},
-  interpolate: function interpolate(str, evalFunc, line, state) {
+  interpolate: function interpolate(str, evalFunc, line, state, n) {
+    //console.log('input:', str, ', n:', n);
+    n = typeof n == 'undefined' ? 0 : n;
     line = typeof line == 'undefined' ? 0 : line;
-    var start = str.indexOf('${');
-    if (start < 0) return str;
+    var start = 0;
     line = line + str.substr(0, start).split('\n').length;
-    var depth = 0;
+    var depth = -1;
     var dflag = false;
-    var comment = null;
-    var length = 0;
-    var strings = ["'", '"'];
+    var hit = false;
+    var strChr = null;
+    var stresc = [];
+    var strings = ["'", '"', '`'];
     var chunk = null;
     var stop = start;
     var brackets = 0;
 
-    var _loop2 = function _loop2() {
+    var _loop = function _loop() {
       var c = str[i];
-      length++;
-      comment = comment == null ? strings.find(function (s) {
+      strChr = strChr == null ? strings.find(function (s) {
         return s == c;
-      }) : strings.find(function (s) {
+      }) : c == strChr ? null : strChr;
+
+      if (strings.find(function (s) {
         return s == c;
-      }) ? null : comment;
-      if (comment != null) return "continue";
-      if (c == '{' && dflag) depth++;
-      if (c == '{' && !dflag) brackets++;
+      })) {
+        if (stresc[stresc.length - 1] == c) {
+          stresc.pop();
+        } else {
+          stresc.push(c);
+        }
+      }
+
+      if (c == '{' && dflag) {
+        start = !hit ? i : start;
+
+        if (hit) {
+          depth++;
+          brackets++;
+        }
+
+        hit = true;
+      }
+
+      if (c == '{' && !dflag && hit) brackets++;
       dflag = c == '$';
 
-      if (c == '}' && brackets == 0) {
+      if (c == '}' && brackets == 0 && hit && Math.max(0, depth - 1) == 0) {
         depth = Math.max(0, depth - 1);
 
-        if (depth == 0) {
-          chunk = str.substr(start + 2, length - 3);
-          stop = start + 3 + chunk.length;
+        if (depth == 0 && hit) {
+          chunk = str.substr(start + 1, i - start - 1);
+          stop = start + chunk.length + 2;
           return "break";
         }
       } else if (c == '}') {
+        depth = Math.max(0, depth - 1);
         brackets = Math.max(0, brackets - 1);
       }
     };
 
-    _loop: for (var i = start; i < str.length; i++) {
-      var _ret = _loop2();
+    for (var i = start; i < str.length; i++) {
+      var _ret = _loop();
 
-      switch (_ret) {
-        case "continue":
-          continue;
-
-        case "break":
-          break _loop;
-      }
+      if (_ret === "break") break;
     }
 
-    if (!chunk) return str.toString();
-    var t = str.substr(0, start) + evalFunc(chunk, line, state) + str.substr(stop);
+    if (!chunk) {
+      //console.log('no chunk:', 'n:', n, 'start:',start, 'hit:', hit, 'brackets:', brackets, 'depth:', depth, str.replace('\n', ''));
+      return str.toString();
+    } //const strChr = stresc.length > 0 ? stresc[stresc.length-1] : null;
+
+
+    chunk = $ngine.interpolate(chunk, evalFunc, line, state, n + 1);
+    chunk = strChr != null && n > 0 ? strChr + '+ ( ' + chunk + ' ) +' + strChr : chunk;
+    if (n > 0) return $ngine.interpolate(str.substr(0, start - 1) + chunk + str.substr(stop), evalFunc, line, state, n + 1); //console.log('eval', chunk);
+
+    var t = str.substr(0, start - 1) + evalFunc(chunk, line, state) + str.substr(stop);
     return $ngine.interpolate(t, evalFunc, line, state).toString();
   },
   reload: function reload(id) {
@@ -176,7 +199,7 @@ var $ngine = {
       c(model);
     };
     getTemplate(function (template, id) {
-      console.log('template', template);
+      //console.log('template', template);
       $ngine.cache[id] = {
         url: url,
         elements: [],

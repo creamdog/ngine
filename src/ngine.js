@@ -2,42 +2,68 @@
 
 const $ngine = {
 	cache: {},
-	interpolate : function(str, evalFunc, line, state) {
+	interpolate : function(str, evalFunc, line, state, n) {
+
+		//console.log('input:', str, ', n:', n);
+
+		n = typeof n == 'undefined' ? 0 : n;
 		line = typeof line == 'undefined' ? 0 : line;
-		const start = str.indexOf('${');
-		if(start < 0) return str;
+		let start = 0;
 		line = line + str.substr(0, start).split('\n').length;
-		let depth = 0;
+		let depth = -1;
 		let dflag = false;
-		let comment = null;
-		let length = 0;
-		const strings = ["'", '"'];
+		let hit = false;
+		let strChr = null;
+		let stresc = [];
+		const strings = ["'", '"', '`'];
 		let chunk = null;
 		let stop = start;
 		let brackets = 0;
 		for(var i=start;i<str.length;i++) {
 			const c = str[i];
-			length++;
-			comment = comment == null ? strings.find(s => s == c) : (strings.find(s => s == c) ? null : comment);
-			if(comment != null) continue;				
-			if(c == '{' && dflag) depth++;
-			if(c == '{' && !dflag) brackets++;
+
+			strChr = strChr == null ? strings.find(s => s == c) : (c == strChr ? null : strChr);
+			
+			if(strings.find(s => s == c)) {
+				if(stresc[stresc.length-1] == c) {
+					stresc.pop();
+				} else {
+					stresc.push(c);
+				}
+			}
+
+			if(c == '{' && dflag) {
+				start = !hit ? i : start;
+				if(hit) {
+					depth++;
+					brackets++;
+				}
+				hit = true;
+			}
+			if(c == '{' && !dflag && hit) brackets++;
 			dflag = c == '$';
-			if(c == '}' && brackets == 0) {
+			if(c == '}' && brackets == 0 && hit && Math.max(0, depth - 1) == 0) {
 				depth = Math.max(0, depth - 1);
-				if(depth == 0)  {
-					chunk = str.substr(start + 2, length - 3);
-					stop = start + 3 + chunk.length;
+				if(depth == 0 && hit)  {
+					chunk = str.substr(start + 1, i - start - 1);
+					stop = start + chunk.length + 2;
 					break;
 				}
 			} else if(c == '}') {
+				depth = Math.max(0, depth - 1);
 				brackets = Math.max(0, brackets - 1);
 			}
         }
-        
-        if(!chunk) return str.toString();	
-        
-		const t = str.substr(0, start) + evalFunc(chunk, line, state) + str.substr(stop);
+		if(!chunk) {
+			//console.log('no chunk:', 'n:', n, 'start:',start, 'hit:', hit, 'brackets:', brackets, 'depth:', depth, str.replace('\n', ''));
+			return str.toString();
+		}	
+		//const strChr = stresc.length > 0 ? stresc[stresc.length-1] : null;
+		chunk = $ngine.interpolate(chunk, evalFunc, line, state, n + 1);
+		chunk = strChr != null && n > 0 ? strChr + '+ ( ' + chunk + ' ) +' + strChr : chunk;
+		if(n > 0) return $ngine.interpolate(str.substr(0, start-1) + chunk + str.substr(stop), evalFunc, line, state, n + 1);
+		//console.log('eval', chunk);
+		const t = str.substr(0, start-1) + evalFunc(chunk, line, state) + str.substr(stop);
 		return $ngine.interpolate(t, evalFunc, line, state).toString();
 	},
 	reload: function(id) {
@@ -132,7 +158,7 @@ const $ngine = {
 
 		getTemplate((template, id) => {
 
-			console.log('template', template);
+			//console.log('template', template);
 
 			$ngine.cache[id] = {url: url, elements:[], model:model};
 
