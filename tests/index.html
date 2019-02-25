@@ -1,10 +1,20 @@
 <html>
     <head>
         <script type="text/javascript" src="/src/ngine.js"></script>
+        <style>
+          body {
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            font-size: 16px;
+          }
+          ul li img {
+            width: 100px;
+          }
+        </style>
     </head>
   <body>
     <script>
-        $ngine.render('partials/page.html', 'https://api.github.com/gists/public', 'body');
+        //https://api.github.com/gists/public
+        $ngine.render('partials/page.html', 'model.json', 'body');
     </script>
   </body>
 </html>

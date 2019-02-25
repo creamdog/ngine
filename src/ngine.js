@@ -69,7 +69,7 @@ const $ngine = {
 	load: (url, callback, id) => {	
 		const req = new XMLHttpRequest();
 		req.addEventListener('load', function(req) {
-			const payload = req.target.responseText;
+			const payload = req.target.status == 404 ? '{ "error" : "404 not found \'' + url + '\' " }' : req.target.responseText;
 			const id = req.target.id;
 			return callback(payload, id);
 		});
@@ -133,14 +133,17 @@ const $ngine = {
 
 			keys.push('render');
 			params.push(function(url, model) {
+				const useState = typeof model == 'undefined';
 				model = typeof model == 'undefined' ? state.getModel : model;
+				//console.log(url, model);
 				return $ngine.render(url, model, function(result, id) {
 					let target = document.getElementById(id);
 					$ngine.apply(target, id, result);
-				}, state);
+				}, useState ? state : undefined);
 			});
 
 			let obj = 'function(' + keys.join(',') + '){ return (' + expression + ') }';
+			//console.log('eval', obj);
 			return Function('"use strict";return (' + obj + ')')()( ...params );
 		} catch(e) {
 			console.log({
@@ -163,11 +166,11 @@ const $ngine = {
 
 		getTemplate((template, id) => {
 
-			//console.log('template', template);
-
 			$ngine.cache[id] = {url: url, elements:[], model:model};
 
 			getModel(function(model){
+
+				//console.log('model', model);
 
 				model = typeof model == 'string' ? JSON.parse(model) : model;
 				model = model == null ? {} : model;

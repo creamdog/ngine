@@ -1,4 +1,7 @@
 
+
+${render('partials/subs.html', 'olle.json')}
+
 <h2>template id</h2>
 
 ${_ngine_template_id_}
@@ -46,5 +49,14 @@ ${['general', 'roles', 'acl', 'child_spaces', 'course/participants'].map(name =>
 
 <br/><br/>
 
+<ul>
+    ${list.map(item => `
+        ${Object.keys(item.files).map(file => `
+            <li>
+                <img src="${item.owner.avatar_url}"/> ${item.owner.login} <a href="${item.html_url}">${file}</a>
+            </li>
+        `).join('')}
+    `).join('')}        
+</ul>
 
-${list.map(item => '${item.owner.login}' + '${Object.keys(item.files).map(file => file)}').join('<br/>')}
+
