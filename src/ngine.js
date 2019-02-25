@@ -66,8 +66,25 @@ const $ngine = {
 		const t = str.substr(0, start-1) + evalFunc(chunk, line, state) + str.substr(stop);
 		return $ngine.interpolate(t, evalFunc, line, state).toString();
 	},
+	load: (url, callback, id) => {	
+		const req = new XMLHttpRequest();
+		req.addEventListener('load', function(req) {
+			const payload = req.target.responseText;
+			const id = req.target.id;
+			return callback(payload, id);
+		});
+		req.id = id;
+		req.open('GET', url);
+		req.send();
+	},
 	reload: function(id) {
-		const getModel = typeof $ngine.cache[id].model == 'function' ? function(c){$ngine.cache[id].model(c)} : function(c) { c($ngine.cache[id].model); };
+		//const getModel = typeof $ngine.cache[id].model == 'function' ? function(c){$ngine.cache[id].model(c)} : function(c) { c($ngine.cache[id].model); };
+
+		const model = $ngine.cache[id].model;
+
+		const getModel = (typeof model == 'function' ? function(c){ model(c); } : (typeof model == 'string' ? function(c) { $ngine.load(model, c, id); } : function(c) { c(model); } ));
+
+
 		$ngine.render($ngine.cache[id].url, getModel, function(result, newId) {
 			var t = $ngine.cache[id].elements[0];
 			var target = document.createElement('div');
@@ -141,20 +158,8 @@ const $ngine = {
 
 		const id = (100000 + Math.floor(Math.random() * 100000)) + '_' + new Date().getTime();
 
-		const load = (url, callback) => {	
-			const req = new XMLHttpRequest();
-			req.addEventListener('load', function(req) {
-				const payload = req.target.responseText;
-				const id = req.target.id;
-				return callback(payload, id);
-			});
-			req.id = id;
-			req.open('GET', url);
-			req.send();
-		}
-
-		const getTemplate = typeof url == 'function' ? (callback) => url(template => callback(template, id)) : (callback) => load(url, callback);
-		const getModel = state && state.model ? function(c) { c(state.model); } : (typeof model == 'function' ? function(c){ model(c); } : (typeof model == 'string' ? function(c) { load(model, c); } : function(c) { c(model); } ));
+		const getTemplate = typeof url == 'function' ? (callback) => url(template => callback(template, id)) : (callback) => $ngine.load(url, callback, id);
+		const getModel = state && state.model ? function(c) { c(state.model); } : (typeof model == 'function' ? function(c){ model(c); } : (typeof model == 'string' ? function(c) { $ngine.load(model, c, id); } : function(c) { c(model); } ));
 
 		getTemplate((template, id) => {
 

@@ -1,0 +1,50 @@
+
+<h2>template id</h2>
+
+${_ngine_template_id_}
+
+<h2>ngine reload</h2>
+
+<button onclick="$ngine.reload('${_ngine_template_id_}')">reload page</button>
+
+<br/><br/>
+
+${list.map(item => `
+    
+    owner: ${item.owner.login}
+    
+`)} 
+
+<br/><br/>
+
+${list.map(item => `
+    
+    owner: ${item.owner.login}
+    
+`)} 
+
+<br/><br/>
+
+<h2>sub render</h2>
+
+${render('partials/sub.html')}
+
+<br/><br/>
+
+<h2>other</h2>
+
+${['general', 'roles', 'acl', 'child_spaces', 'course/participants'].map(a => a)}
+
+<br/><br/>
+
+${['general', 'roles', 'acl', 'child_spaces', 'course/participants'].map(name => `
+<li class="nav-item">
+    <a class="nav-link ${name == 'general' ? 'active' : ''}" id="${name.replace(/[^a-z0-9]+/, '_')}-tab" data-toggle="tab" href="#${name.replace(/[^a-z0-9]+/, '_')}" role="tab" aria-controls="${name.replace(/[^a-z0-9]+/, '_')}" aria-selected="false">${name}</a>
+</li>
+`).join('')}
+
+
+<br/><br/>
+
+
+${list.map(item => '${item.owner.login}' + '${Object.keys(item.files).map(file => file)}').join('<br/>')}

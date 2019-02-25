@@ -90,11 +90,26 @@ var $ngine = {
     var t = str.substr(0, start - 1) + evalFunc(chunk, line, state) + str.substr(stop);
     return $ngine.interpolate(t, evalFunc, line, state).toString();
   },
+  load: function load(url, callback, id) {
+    var req = new XMLHttpRequest();
+    req.addEventListener('load', function (req) {
+      var payload = req.target.responseText;
+      var id = req.target.id;
+      return callback(payload, id);
+    });
+    req.id = id;
+    req.open('GET', url);
+    req.send();
+  },
   reload: function reload(id) {
-    var getModel = typeof $ngine.cache[id].model == 'function' ? function (c) {
-      $ngine.cache[id].model(c);
+    //const getModel = typeof $ngine.cache[id].model == 'function' ? function(c){$ngine.cache[id].model(c)} : function(c) { c($ngine.cache[id].model); };
+    var model = $ngine.cache[id].model;
+    var getModel = typeof model == 'function' ? function (c) {
+      model(c);
+    } : typeof model == 'string' ? function (c) {
+      $ngine.load(model, c, id);
     } : function (c) {
-      c($ngine.cache[id].model);
+      c(model);
     };
     $ngine.render($ngine.cache[id].url, getModel, function (result, newId) {
       var t = $ngine.cache[id].elements[0];
@@ -169,32 +184,19 @@ var $ngine = {
   },
   render: function render(url, model, callback, state) {
     var id = 100000 + Math.floor(Math.random() * 100000) + '_' + new Date().getTime();
-
-    var load = function load(url, callback) {
-      var req = new XMLHttpRequest();
-      req.addEventListener('load', function (req) {
-        var payload = req.target.responseText;
-        var id = req.target.id;
-        return callback(payload, id);
-      });
-      req.id = id;
-      req.open('GET', url);
-      req.send();
-    };
-
     var getTemplate = typeof url == 'function' ? function (callback) {
       return url(function (template) {
         return callback(template, id);
       });
     } : function (callback) {
-      return load(url, callback);
+      return $ngine.load(url, callback, id);
     };
     var getModel = state && state.model ? function (c) {
       c(state.model);
     } : typeof model == 'function' ? function (c) {
       model(c);
     } : typeof model == 'string' ? function (c) {
-      load(model, c);
+      $ngine.load(model, c, id);
     } : function (c) {
       c(model);
     };
