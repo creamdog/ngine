@@ -2,7 +2,7 @@
 
 const $ngine = {
 	cache: {},
-	interpolate : function(str, evalFunc, line, state, n) {
+	interpolate : (str, evalFunc, line, state, n) => {
 
 		//console.log('input:', str, ', n:', n);
 
@@ -68,7 +68,7 @@ const $ngine = {
 	},
 	load: (url, callback, id) => {	
 		const req = new XMLHttpRequest();
-		req.addEventListener('load', function(req) {
+		req.addEventListener('load', (req) => {
 			const payload = req.target.status == 404 ? '{ "error" : "404 not found \'' + url + '\' " }' : req.target.responseText;
 			const id = req.target.id;
 			return callback(payload, id);
@@ -78,14 +78,13 @@ const $ngine = {
 		req.send();
 	},
 	reload: function(id) {
-		//const getModel = typeof $ngine.cache[id].model == 'function' ? function(c){$ngine.cache[id].model(c)} : function(c) { c($ngine.cache[id].model); };
 
 		const model = $ngine.cache[id].model;
 
-		const getModel = (typeof model == 'function' ? function(c){ model(c); } : (typeof model == 'string' ? function(c) { $ngine.load(model, c, id); } : function(c) { c(model); } ));
+		const getModel = (typeof model == 'function' ? (c) => { model(c); } : (typeof model == 'string' ? (c) => { $ngine.load(model, c, id); } : (c) => { c(model); } ));
 
 
-		$ngine.render($ngine.cache[id].url, getModel, function(result, newId) {
+		$ngine.render($ngine.cache[id].url, getModel, (result, newId) => {
 			var t = $ngine.cache[id].elements[0];
 			var target = document.createElement('div');
 			t.parentNode.insertBefore(target, t);
@@ -95,7 +94,7 @@ const $ngine = {
 			$ngine.apply(target, newId, result);		
 		});
 	},
-	apply: function(target, id, result) {
+	apply: (target, id, result) => {
 
 		if(typeof target == 'undefined' || target == null) {
 			console.log('unable to ngine.apply:', id);
@@ -113,7 +112,40 @@ const $ngine = {
 				node.remove();
 				target.parentNode.insertBefore(node, target);
 			}
+
 			target.remove();
+
+			// eval all scripts
+
+			const scripts = $ngine.cache[id].elements.filter(element => element.nodeName == 'SCRIPT');
+			const externalScripts = scripts.filter(script => script.getAttribute('src') != null);
+			const embeddedScripts = scripts.filter(script => script.innerHTML.trim().length > 0);
+			let counter = externalScripts.length;
+
+			const deferLoader = (function(counter, embeddedScripts){
+				return () => {
+					counter--;
+					if(counter == 0) {
+						embeddedScripts.forEach(e => {
+							e.remove();
+							let n = document.createElement('script');
+							n.setAttribute('type', 'text/javascript');
+							n.innerHTML = e.innerHTML;
+							document.body.appendChild(n);
+						});
+					}
+				}
+			})(counter, embeddedScripts);
+
+			externalScripts.forEach(e => {
+				e.remove();
+				let n = document.createElement('script');
+				n.setAttribute('src', e.getAttribute('src'));
+				n.setAttribute('type', 'text/javascript');
+				n.addEventListener('load', deferLoader);
+				document.body.appendChild(n);
+			});
+			
 		} else { 
 			let tmp = document.createElement('div');
 			tmp.innerHTML = '<!--8a002e27-eca8-4fdc-9b1b-41d2c1468d5f-->';
@@ -122,7 +154,7 @@ const $ngine = {
 			ObjParent.innerHTML=ObjParent.innerHTML.replace('<div>' + tmp.innerHTML + '</div>',result);
 		}
 	},
-	eval: function(expression, line, state) {
+	eval: (expression, line, state) => {
 
 		const model = state.model;
 		const url = state.url;
@@ -132,11 +164,11 @@ const $ngine = {
 			let params = Object.keys(model).map(key => model[key]);
 
 			keys.push('render');
-			params.push(function(url, model) {
+			params.push((url, model) => {
 				const useState = typeof model == 'undefined';
 				model = typeof model == 'undefined' ? state.getModel : model;
 				//console.log(url, model);
-				return $ngine.render(url, model, function(result, id) {
+				return $ngine.render(url, model, (result, id) => {
 					let target = document.getElementById(id);
 					$ngine.apply(target, id, result);
 				}, useState ? state : undefined);
@@ -157,18 +189,18 @@ const $ngine = {
 		}
 
 	},
-	render : function(url, model, callback, state) {
+	render : (url, model, callback, state) => {
 
 		const id = (100000 + Math.floor(Math.random() * 100000)) + '_' + new Date().getTime();
 
 		const getTemplate = typeof url == 'function' ? (callback) => url(template => callback(template, id)) : (callback) => $ngine.load(url, callback, id);
-		const getModel = state && state.model ? function(c) { c(state.model); } : (typeof model == 'function' ? function(c){ model(c); } : (typeof model == 'string' ? function(c) { $ngine.load(model, c, id); } : function(c) { c(model); } ));
+		const getModel = state && state.model ? (c) => { c(state.model); } : (typeof model == 'function' ? (c) => { model(c); } : (typeof model == 'string' ? (c) => { $ngine.load(model, c, id); } : (c) => { c(model); } ));
 
 		getTemplate((template, id) => {
 
 			$ngine.cache[id] = {url: url, elements:[], model:model};
 
-			getModel(function(model){
+			getModel((model) => {
 
 				//console.log('model', model);
 
@@ -181,7 +213,7 @@ const $ngine = {
 				model._ngine_template_url_ = url;
 				const compiled = $ngine.interpolate(template, $ngine.eval, 0, state).toString();
 
-				const evalCallbackTargets = function(callback) {
+				const evalCallbackTargets = (callback) => {
 					if(typeof callback == 'undefined') return [];
 					if(typeof callback == 'function') return [callback];
 					if(typeof callback == 'string') {

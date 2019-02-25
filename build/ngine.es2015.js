@@ -102,7 +102,6 @@ var $ngine = {
     req.send();
   },
   reload: function reload(id) {
-    //const getModel = typeof $ngine.cache[id].model == 'function' ? function(c){$ngine.cache[id].model(c)} : function(c) { c($ngine.cache[id].model); };
     var model = $ngine.cache[id].model;
     var getModel = typeof model == 'function' ? function (c) {
       model(c);
@@ -143,7 +142,43 @@ var $ngine = {
         target.parentNode.insertBefore(node, target);
       }
 
-      target.remove();
+      target.remove(); // eval all scripts
+
+      var scripts = $ngine.cache[id].elements.filter(function (element) {
+        return element.nodeName == 'SCRIPT';
+      });
+      var externalScripts = scripts.filter(function (script) {
+        return script.getAttribute('src') != null;
+      });
+      var embeddedScripts = scripts.filter(function (script) {
+        return script.innerHTML.trim().length > 0;
+      });
+      var counter = externalScripts.length;
+
+      var deferLoader = function (counter, embeddedScripts) {
+        return function () {
+          counter--;
+
+          if (counter == 0) {
+            embeddedScripts.forEach(function (e) {
+              e.remove();
+              var n = document.createElement('script');
+              n.setAttribute('type', 'text/javascript');
+              n.innerHTML = e.innerHTML;
+              document.body.appendChild(n);
+            });
+          }
+        };
+      }(counter, embeddedScripts);
+
+      externalScripts.forEach(function (e) {
+        e.remove();
+        var n = document.createElement('script');
+        n.setAttribute('src', e.getAttribute('src'));
+        n.setAttribute('type', 'text/javascript');
+        n.addEventListener('load', deferLoader);
+        document.body.appendChild(n);
+      });
     } else {
       var tmp = document.createElement('div');
       tmp.innerHTML = '<!--8a002e27-eca8-4fdc-9b1b-41d2c1468d5f-->';
