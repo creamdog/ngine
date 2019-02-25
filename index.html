@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <style>
+            window, body, p, span, h1, h2, h3, h4, header, footer, a {
+                margin: 0;
+                padding: 0;
+                font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+                font-weight: 0;
+                color: #282828;
+            }
+            h1 {
+                font-size: 48px;
+            }
+            h1, h2, h3, h4 {
+                font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+            }
+            body > * {
+                margin: 0 auto;
+                width: 800px;
+            }
+
+            header, footer {
+                margin: 1em auto 1em auto;
+            }
+        </style>
+
+        <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.4/styles/default.min.css" media="nope!" onload="this.media='all'">
+
+        <script type="text/javascript" src="build/ngine.min.js"></script>
+
+        <!--<script type="text/javascript" src="src/ngine.js"></script>-->
+    </head>
+
+    <body onload="$ngine.render('docs/nginjs.com/app.html', {}, 'body')"></body>
+
+</html>
