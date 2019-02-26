@@ -1,5 +1,5 @@
-<h4>${url.replace(window.location, '')}</h4>
-<pre class="html"><code class="html">${model.replace(/[<]/ig, '&lt;').replace(/[>]/ig, '&gt;').replace(/\$/ig, '&#36;')}
+<h4>${url.replace(window.location.protocol + '//' + window.location.host, '')}</h4>
+<pre class="html"><code class="html">${model.trim().replace(/[<]/ig, '&lt;').replace(/[>]/ig, '&gt;').replace(/\$/ig, '&#36;')}
 </code></pre>
 
 <script>

@@ -3,5 +3,3 @@ ${model.license && model.updated_at ? `
     | <a href="${model.license.url}">${model.license.name}</a> 
     | <span>Last Commit "${new Date(Date.parse(model.updated_at)).toLocaleString("sv-SE")}"</span>
 ` : ''}
-
-
