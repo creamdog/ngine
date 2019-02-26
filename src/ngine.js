@@ -1,7 +1,8 @@
 /*! Ngine v1.0.0 | (c) Christian Westman | GNU General Public License v3.0 | https://github.com/creamdog/ngine */
 
-const $ngine = {
+window.$ngine = {
 	cache: {},
+	state: {},
 	interpolate : (str, evalFunc, line, state, n) => {
 
 		//console.log('input:', str, ', n:', n);
@@ -66,11 +67,23 @@ const $ngine = {
 		const t = str.substr(0, start-1) + evalFunc(chunk, line, state) + str.substr(stop);
 		return $ngine.interpolate(t, evalFunc, line, state).toString();
 	},
-	load: (url, callback, id) => {	
+	load: (url, callback, id, asModel) => {	
 		const req = new XMLHttpRequest();
+
+		//console.log(url);
+
 		req.addEventListener('load', (req) => {
-			const payload = req.target.status == 404 ? '{ "error" : "404 not found \'' + url + '\' " }' : req.target.responseText;
+
+			const contentType = req.target.getResponseHeader('content-type') || '';
+
+			const payload = (function(){
+				let data = req.target.status == 404 ? '{ "error" : "404 not found \'' + url + '\' " }' : req.target.responseText;
+				data = contentType.indexOf('application/json') >= 0 ? JSON.parse(data) : data;
+				return asModel ? {model: data, url: url} : data;
+			})();
+
 			const id = req.target.id;
+
 			return callback(payload, id);
 		});
 		req.id = id;
@@ -81,7 +94,7 @@ const $ngine = {
 
 		const model = $ngine.cache[id].model;
 
-		const getModel = (typeof model == 'function' ? (c) => { model(c); } : (typeof model == 'string' ? (c) => { $ngine.load(model, c, id); } : (c) => { c(model); } ));
+		const getModel = (typeof model == 'function' ? (c) => { model(c); } : (typeof model == 'string' ? (c) => { $ngine.load(model, c, id, true); } : (c) => { c(model); } ));
 
 
 		$ngine.render($ngine.cache[id].url, getModel, (result, newId) => {
@@ -125,7 +138,7 @@ const $ngine = {
 			const deferLoader = (function(counter, embeddedScripts){
 				return () => {
 					counter--;
-					if(counter == 0) {
+					if(counter <= 0) {
 						embeddedScripts.forEach(e => {
 							e.remove();
 							let n = document.createElement('script');
@@ -136,6 +149,8 @@ const $ngine = {
 					}
 				}
 			})(counter, embeddedScripts);
+
+			if(counter == 0) deferLoader();
 
 			externalScripts.forEach(e => {
 				e.remove();
@@ -175,7 +190,7 @@ const $ngine = {
 			});
 
 			const obj = 'function(' + keys.join(',') + '){ return (' + expression + ') }';
-			console.log('eval', obj);
+			//console.log('eval', obj);
 			const result = Function('"use strict";return (' + obj + ')')()( ...params );
 			//console.log('result', result);
 			return result;
@@ -191,24 +206,32 @@ const $ngine = {
 		}
 
 	},
+	navigate: (url, model, callback) => {
+		window.location.hash = '#!' + url;
+		$ngine.cache[url] = {
+			model: model,
+			callback: callback,
+		};
+		return $ngine.render(url, model, callback);
+	},
 	render : (url, model, callback, state) => {
+
+		console.log('render', url, model);
 
 		const id = (100000 + Math.floor(Math.random() * 100000)) + '_' + new Date().getTime();
 
 		const getTemplate = typeof url == 'function' ? (callback) => url(template => callback(template, id)) : (callback) => $ngine.load(url, callback, id);
-		const getModel = state && state.model ? (c) => { c(state.model); } : (typeof model == 'function' ? (c) => { model(c); } : (typeof model == 'string' ? (c) => { $ngine.load(model, c, id); } : (c) => { c(model); } ));
+		const getModel = state && state.getModel ? state.getModel : (typeof model == 'function' ? (c) => { model(c); } : (typeof model == 'string' ? (c) => { $ngine.load(model, c, id, true); } : (c) => { c(model); } ));
 
 		getTemplate((template, id) => {
 
 			$ngine.cache[id] = {url: url, elements:[], model:model};
 
-			getModel((model) => {
+			//console.log(url, template);
+
+			getModel((model, url) => {
 
 				//console.log('model', model);
-
-				model = typeof model == 'string' ? { model: JSON.parse(model) } : model;
-				model = model == null ? {} : model;
-				model = Array.isArray(model) ? {list: model} : model;
 
 				const state = {url: url, model: model, getModel: getModel, cache: {}, id: id};
 				model._ngine_template_id_ = id;
@@ -267,3 +290,11 @@ const $ngine = {
 		return '<span id="' + id + '">loading..</span>';
 	}
 };
+
+window.addEventListener("hashchange", () => {
+	if(window.location.hash.indexOf('#!') != 0) return;
+	const url = window.location.hash.substr(2);
+	const model = $ngine.cache[url] ? $ngine.cache[url].model : {};
+	const callback = $ngine.cache[url] ? $ngine.cache[url].callback : 'body';
+	$ngine.render(url, model, callback);
+}, false);

@@ -1,29 +1,19 @@
-
-<div>
-<div>
-        <a href="${window.location}build/ngine.min.js">Download</a> 
-        | ${render('docs/nginjs.com/github.html', 'https://api.github.com/repos/creamdog/ngine')}      
-</div>  
-</div>
-
-<header>
-
-    <div>
-        <h1>Ngine</h1>
-        <i>just templating</i>    
-    </div> 
-
-</header>
+${render('docs/nginjs.com/partials/header.html')}
 
 <main>
 
-    ${['simple'].map(name => {
-        return ${render('docs/nginjs.com/examples/' + name + '.html')};
-    }).join('')}
-   
-</main>
+    <h3>General use</h3>
 
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.4/highlight.min.js"></script>
-<script>
-    hljs.initHighlighting();
-</script>
+    <div class="indent">
+        <p>
+            The following is auto generated from what you are viewing right now on this website.
+        </p>
+
+        ${['index.html', 'docs/nginjs.com/app.html', 'docs/nginjs.com/partials/header.html', 'docs/nginjs.com/partials/code.html'].map(file => `
+
+            ${render('docs/nginjs.com/partials/code.html', window.location.protocol + '//' + window.location.host + '/' + file)}
+
+        `).join('')}
+    </div>
+
+</main>

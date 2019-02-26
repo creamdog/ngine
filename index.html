@@ -2,95 +2,14 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <style>
-            window, body, p, span, h1, h2, h3, h4, header, footer, a, pre {
-                margin: 0;
-                padding: 0;
-                font-family: monospace, verdana;
-                font-weight: 0;
-                color: #282828;
-            }
-
-            h2, h3, h4, pre {
-                margin-bottom: 1em;
-            }
-
-            h1 {
-                font-size: 68px;
-                font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-            }
-            body > *, body > div > div {
-                margin: 1em auto 0 auto;
-                width: 800px;
-            }
-
-            body > div > div {
-                margin: 0 auto;
-            }
-
-            body > div {
-                margin: 0;
-                padding: 1em 0;
-                background: #383838;
-                width: 100%;
-                color: #e0e0e0;
-            }
-
-            body > div * {
-                color: #f0f0f0;
-            }
-
-            header, footer {
-                margin: 1em auto 1em auto;
-            }
-
-            header {
-                background: #BB5544;
-                margin: 0 0 1em 0;
-                display: block;
-                width: 100%;
-                padding: 2em 0;
-                color: #fffafa;
-            }
-
-            header * {
-                color: #fffafa;
-            }
-
-            header > div {
-                margin: 0 auto;
-                width: calc(800px - 2em);
-                padding: 0 1em;
-            }
-
-            header > div > i {
-                font-size: 2em;
-            }
-
-            .example {
-                margin-left: 2em;
-            }
-
-            .example h4 {
-                margin: 0;
-                background: #484848;
-                padding: 0.5em 1em;
-                color: #f0f0f0;
-            }
-
-            code * {
-                font-family: monospace;
-            }
-
-        </style>
-
+        <link rel="stylesheet" href="index.css">
         <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.4/styles/default.min.css" media="nope!" onload="this.media='all'">
+        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.4/highlight.min.js"></script>
+        
+        <script type="text/javascript" src="src/ngine.js"></script>
 
-        <script type="text/javascript" src="build/ngine.min.js"></script>
-
-        <!--<script type="text/javascript" src="src/ngine.js"></script>-->
     </head>
 
-    <body onload="$ngine.render('docs/nginjs.com/app.html', {}, 'body')"></body>
+    <body onload="$ngine.navigate('docs/nginjs.com/app.html', {}, 'body')"></body>
 
 </html>
