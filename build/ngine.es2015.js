@@ -9,8 +9,9 @@ function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
 /*! Ngine v1.0.0 | (c) Christian Westman | GNU General Public License v3.0 | https://github.com/creamdog/ngine */
-var $ngine = {
+window.$ngine = {
   cache: {},
+  state: {},
   interpolate: function interpolate(str, evalFunc, line, state, n) {
     //console.log('input:', str, ', n:', n);
     n = typeof n == 'undefined' ? 0 : n;
@@ -90,10 +91,21 @@ var $ngine = {
     var t = str.substr(0, start - 1) + evalFunc(chunk, line, state) + str.substr(stop);
     return $ngine.interpolate(t, evalFunc, line, state).toString();
   },
-  load: function load(url, callback, id) {
-    var req = new XMLHttpRequest();
+  load: function load(url, callback, id, asModel) {
+    var req = new XMLHttpRequest(); //console.log(url);
+
     req.addEventListener('load', function (req) {
-      var payload = req.target.status == 404 ? '{ "error" : "404 not found \'' + url + '\' " }' : req.target.responseText;
+      var contentType = req.target.getResponseHeader('content-type') || '';
+
+      var payload = function () {
+        var data = req.target.status == 404 ? '{ "error" : "404 not found \'' + url + '\' " }' : req.target.responseText;
+        data = contentType.indexOf('application/json') >= 0 ? JSON.parse(data) : data;
+        return asModel ? {
+          model: data,
+          url: url
+        } : data;
+      }();
+
       var id = req.target.id;
       return callback(payload, id);
     });
@@ -106,7 +118,7 @@ var $ngine = {
     var getModel = typeof model == 'function' ? function (c) {
       model(c);
     } : typeof model == 'string' ? function (c) {
-      $ngine.load(model, c, id);
+      $ngine.load(model, c, id, true);
     } : function (c) {
       c(model);
     };
@@ -159,7 +171,7 @@ var $ngine = {
         return function () {
           counter--;
 
-          if (counter == 0) {
+          if (counter <= 0) {
             embeddedScripts.forEach(function (e) {
               e.remove();
               var n = document.createElement('script');
@@ -171,6 +183,7 @@ var $ngine = {
         };
       }(counter, embeddedScripts);
 
+      if (counter == 0) deferLoader();
       externalScripts.forEach(function (e) {
         e.remove();
         var n = document.createElement('script');
@@ -206,8 +219,8 @@ var $ngine = {
           $ngine.apply(target, id, result);
         }, useState ? state : undefined);
       });
-      var obj = 'function(' + keys.join(',') + '){ return (' + expression + ') }';
-      console.log('eval', obj);
+      var obj = 'function(' + keys.join(',') + '){ return (' + expression + ') }'; //console.log('eval', obj);
+
       var result = Function('"use strict";return (' + obj + ')')().apply(void 0, _toConsumableArray(params)); //console.log('result', result);
 
       return result;
@@ -222,7 +235,16 @@ var $ngine = {
       return '{{  "' + e.message + '"  }}';
     }
   },
+  navigate: function navigate(url, model, callback) {
+    window.location.hash = '#!' + url;
+    $ngine.cache[url] = {
+      model: model,
+      callback: callback
+    };
+    return $ngine.render(url, model, callback);
+  },
   render: function render(url, model, callback, state) {
+    console.log('render', url, model);
     var id = 100000 + Math.floor(Math.random() * 100000) + '_' + new Date().getTime();
     var getTemplate = typeof url == 'function' ? function (callback) {
       return url(function (template) {
@@ -231,12 +253,10 @@ var $ngine = {
     } : function (callback) {
       return $ngine.load(url, callback, id);
     };
-    var getModel = state && state.model ? function (c) {
-      c(state.model);
-    } : typeof model == 'function' ? function (c) {
+    var getModel = state && state.getModel ? state.getModel : typeof model == 'function' ? function (c) {
       model(c);
     } : typeof model == 'string' ? function (c) {
-      $ngine.load(model, c, id);
+      $ngine.load(model, c, id, true);
     } : function (c) {
       c(model);
     };
@@ -245,16 +265,10 @@ var $ngine = {
         url: url,
         elements: [],
         model: model
-      };
-      getModel(function (model) {
+      }; //console.log(url, template);
+
+      getModel(function (model, url) {
         //console.log('model', model);
-        model = typeof model == 'string' ? {
-          model: JSON.parse(model)
-        } : model;
-        model = model == null ? {} : model;
-        model = Array.isArray(model) ? {
-          list: model
-        } : model;
         var state = {
           url: url,
           model: model,
@@ -320,4 +334,11 @@ var $ngine = {
     return '<span id="' + id + '">loading..</span>';
   }
 };
+window.addEventListener("hashchange", function () {
+  if (window.location.hash.indexOf('#!') != 0) return;
+  var url = window.location.hash.substr(2);
+  var model = $ngine.cache[url] ? $ngine.cache[url].model : {};
+  var callback = $ngine.cache[url] ? $ngine.cache[url].callback : 'body';
+  $ngine.render(url, model, callback);
+}, false);
 
