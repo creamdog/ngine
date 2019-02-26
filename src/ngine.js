@@ -23,9 +23,9 @@ window.$ngine = {
 		for(var i=start;i<str.length;i++) {
 			const c = str[i];
 
-			strChr = strChr == null ? strings.find(s => s == c) : (c == strChr ? null : strChr);
+			strChr = strChr == null ? strings.filter(a => a == c)[0] : (c == strChr ? null : strChr);
 			
-			if(strings.find(s => s == c)) {
+			if(strings.filter(a => a == c)[0]) {
 				if(stresc[stresc.length-1] == c) {
 					stresc.pop();
 				} else {
@@ -102,7 +102,8 @@ window.$ngine = {
 			var target = document.createElement('div');
 			t.parentNode.insertBefore(target, t);
 			for(var i=0;i<$ngine.cache[id].elements.length;i++) {
-				$ngine.cache[id].elements[i].remove();
+				const e = $ngine.cache[id].elements[i];
+				e.parentNode.removeChild(e);
 			}
 			$ngine.apply(target, newId, result);		
 		});
@@ -122,11 +123,11 @@ window.$ngine = {
 			}	
 			for(let i=0;i<$ngine.cache[id].elements.length;i++) {
 				const node = $ngine.cache[id].elements[i];
-				node.remove();
+				node.parentNode.removeChild(node);
 				target.parentNode.insertBefore(node, target);
 			}
 
-			target.remove();
+			target.parentNode.removeChild(target);
 
 			// eval all scripts
 
@@ -140,7 +141,7 @@ window.$ngine = {
 					counter--;
 					if(counter <= 0) {
 						embeddedScripts.forEach(e => {
-							e.remove();
+							e.parentNode.removeChild(e);
 							let n = document.createElement('script');
 							n.setAttribute('type', 'text/javascript');
 							n.innerHTML = e.innerHTML;
@@ -153,7 +154,7 @@ window.$ngine = {
 			if(counter == 0) deferLoader();
 
 			externalScripts.forEach(e => {
-				e.remove();
+				e.parentNode.removeChild(e);
 				let n = document.createElement('script');
 				n.setAttribute('src', e.getAttribute('src'));
 				n.setAttribute('type', 'text/javascript');
@@ -279,7 +280,7 @@ window.$ngine = {
 
 					target.innerHTML = '';
 					const compositeTarget = document.createElement('div');
-					target.append(compositeTarget);
+					target.appendChild(compositeTarget);
 					$ngine.apply(compositeTarget, id, compiled);
 				}
 

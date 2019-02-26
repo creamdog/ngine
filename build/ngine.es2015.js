@@ -30,13 +30,13 @@ window.$ngine = {
 
     var _loop = function _loop() {
       var c = str[i];
-      strChr = strChr == null ? strings.find(function (s) {
-        return s == c;
-      }) : c == strChr ? null : strChr;
+      strChr = strChr == null ? strings.filter(function (a) {
+        return a == c;
+      })[0] : c == strChr ? null : strChr;
 
-      if (strings.find(function (s) {
-        return s == c;
-      })) {
+      if (strings.filter(function (a) {
+        return a == c;
+      })[0]) {
         if (stresc[stresc.length - 1] == c) {
           stresc.pop();
         } else {
@@ -128,7 +128,8 @@ window.$ngine = {
       t.parentNode.insertBefore(target, t);
 
       for (var i = 0; i < $ngine.cache[id].elements.length; i++) {
-        $ngine.cache[id].elements[i].remove();
+        var e = $ngine.cache[id].elements[i];
+        e.parentNode.removeChild(e);
       }
 
       $ngine.apply(target, newId, result);
@@ -150,11 +151,11 @@ window.$ngine = {
 
       for (var _i = 0; _i < $ngine.cache[id].elements.length; _i++) {
         var node = $ngine.cache[id].elements[_i];
-        node.remove();
+        node.parentNode.removeChild(node);
         target.parentNode.insertBefore(node, target);
       }
 
-      target.remove(); // eval all scripts
+      target.parentNode.removeChild(target); // eval all scripts
 
       var scripts = $ngine.cache[id].elements.filter(function (element) {
         return element.nodeName == 'SCRIPT';
@@ -173,7 +174,7 @@ window.$ngine = {
 
           if (counter <= 0) {
             embeddedScripts.forEach(function (e) {
-              e.remove();
+              e.parentNode.removeChild(e);
               var n = document.createElement('script');
               n.setAttribute('type', 'text/javascript');
               n.innerHTML = e.innerHTML;
@@ -185,7 +186,7 @@ window.$ngine = {
 
       if (counter == 0) deferLoader();
       externalScripts.forEach(function (e) {
-        e.remove();
+        e.parentNode.removeChild(e);
         var n = document.createElement('script');
         n.setAttribute('src', e.getAttribute('src'));
         n.setAttribute('type', 'text/javascript');
@@ -326,7 +327,7 @@ window.$ngine = {
 
           target.innerHTML = '';
           var compositeTarget = document.createElement('div');
-          target.append(compositeTarget);
+          target.appendChild(compositeTarget);
           $ngine.apply(compositeTarget, id, compiled);
         }
       });

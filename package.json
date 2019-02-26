@@ -7,7 +7,7 @@
     "doc": "doc"
   },
   "scripts": {
-    "start" : "http-server .",
+    "start": "http-server .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "babel src/ngine.js > build/ngine.es2015.js && uglifyjs -c -m -p bare_returns build/ngine.es2015.js > build/tmp.js && echo '/*! Ngine v1.0.0 | (c) Christian Westman | GNU General Public License v3.0 | https://github.com/creamdog/ngine */' > build/ngine.min.js && cat build/tmp.js >> build/ngine.min.js && rm build/tmp.js"
   },
@@ -31,7 +31,10 @@
     "@babel/core": "^7.3.3",
     "@babel/preset-env": "^7.3.1",
     "uglify-js": "3.2.0",
-    "http-server" : "0.11.1"
+    "http-server": "0.11.1",
+    "babel-preset-env": "^1.7.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@babel/preset-es2015": "^7.0.0-beta.53"
+  }
 }
