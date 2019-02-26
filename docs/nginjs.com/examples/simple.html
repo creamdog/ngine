@@ -1,0 +1,53 @@
+
+<h3>General use</h3>
+
+<div class="example">
+
+    <h4>index.html</h4>
+    <pre><code class="common all">
+    ${(`
+    <!DOCTYPE html>
+    <html lang="en">
+    
+    <head>
+        <script type="text/javascript" src="${window.location}build/ngine.min.js"></script>
+    </head>
+    
+    <body onload="$ngine.render('docs/nginjs.com/app.html', {}, 'body')"></body>
+    
+    </html>
+    `).replace(/[<]/ig, '&lt;').replace(/[>]/ig, '&gt;')}
+    </code></pre>
+
+    <h4>docs/nginjs.com/app.html</h4>
+    <pre><code class="common all">
+    ${(`
+    <div>
+        <div>
+            <a href="&#36;{window.location}build/ngine.min.js">Download</a> 
+            | &#36;{render('docs/nginjs.com/github.html', 'https://api.github.com/repos/creamdog/ngine')}      
+        </div>  
+    </div>
+
+    <header>
+        <div>
+            <h1>Ngine</h1>
+            <i>just templating</i>    
+        </div> 
+    </header>
+
+    <main>
+    &#36;{['simple'].map(name => {
+        return &#36;{render('docs/nginjs.com/examples/' + name + '.html')};
+    }).join('')}
+    </main>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.4/highlight.min.js"></script>
+    <script>
+            hljs.initHighlighting();
+        </script>
+    `).replace(/[<]/ig, '&lt;').replace(/[>]/ig, '&gt;')}
+    </code></pre>
+
+</div>
+

@@ -1,40 +1,29 @@
 
-<header>
-    <a href="${window.location}build/ngine.min.js">Download</a> 
-    | ${render('docs/nginjs.com/github.html', 'https://api.github.com/repos/creamdog/ngine')}
-</header>
-
-
-
-
 <div>
-    <h1>Ngine</h1>
-    <i>just templating</i>    
+<div>
+        <a href="${window.location}build/ngine.min.js">Download</a> 
+        | ${render('docs/nginjs.com/github.html', 'https://api.github.com/repos/creamdog/ngine')}      
+</div>  
 </div>
 
-<footer>
+<header>
 
-</footer>
+    <div>
+        <h1>Ngine</h1>
+        <i>just templating</i>    
+    </div> 
 
-<pre><code class="common all">
-${(`
-    <!DOCTYPE html>
-    <html lang="en">
-        
-        <head>
-            <script type="text/javascript" src="${window.location}build/ngine.min.js"></script>
-        </head>
+</header>
 
-        <body onload="$ngine.render('docs/nginjs.com/app.html', {}, 'body')"></body>
-    
-    </html>
-`).replace(/[<]/ig, '&lt;').replace(/[>]/ig, '&gt;')}
+<main>
 
-</code></pre>
+    ${['simple'].map(name => {
+        return ${render('docs/nginjs.com/examples/' + name + '.html')};
+    }).join('')}
+   
+</main>
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.4/highlight.min.js"></script>
 <script>
     hljs.initHighlighting();
 </script>
-
-
