@@ -6,6 +6,10 @@ window, body, p, span, h1, h2, h3, h4, header, footer, a, pre {
     color: #282828;
 }
 
+.green {
+    color: #66CC66;
+}
+
 h2, h3, h4, pre, p {
     margin-bottom: 1em;
 }
@@ -34,7 +38,7 @@ body > div > div {
 
 body > div {
     margin: 0;
-    padding: 1em 0;
+    padding:1em;
     background: #383838;
     width: 100%;
     color: #e0e0e0;
@@ -47,6 +51,7 @@ body > div * {
 
 main, div.main {
     display: block;
+    padding: 0 1em;
 }
 
 header, footer, div.header, div.footer {
@@ -91,8 +96,29 @@ code * {
     font-family: monospace;
 }
 
+.compat {
+    color: #ffff;
+    font-size: 18px;   
+    margin: 0 0 -1em 0;   
+    padding:1em 0 0 0;
+}
 
 @media only screen and (min-width: 800px) {
+
+    main, div.main {
+        padding: 0;
+    }
+
+    body > div {
+        padding: 1em 0;
+    }
+
+    .compat {
+        text-align: right;
+        margin: 0;
+        margin-bottom: -1em;  
+        padding: 0;
+    }
 
     .indent {
         margin-left: 2em;
