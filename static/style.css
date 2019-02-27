@@ -25,7 +25,7 @@ a {
 
 body > *, body > div > div {
     margin: 1em auto 0 auto;
-    width: 800px;
+    width: 100%;
 }
 
 body > div > div {
@@ -42,13 +42,18 @@ body > div {
 
 body > div * {
     color: #f0f0f0;
+    width: 100%;
 }
 
-header, footer {
+main, div.main {
+    display: block;
+}
+
+header, footer, div.header, div.footer {
     margin: 1em auto 1em auto;
 }
 
-header {
+header, div.header {
     background: #BB5544;
     margin: 0 0 1em 0;
     display: block;
@@ -57,22 +62,22 @@ header {
     color: #fffafa;
 }
 
-header * {
+div.header * {
     color: #fffafa;
 }
 
-header > div {
+header > div, div.header > div {
     margin: 0 auto;
-    width: calc(800px - 2em);
+    width: 100%;
     padding: 0 1em;
 }
 
-header > div > i {
+header > div > i, div.header > div > i {
     font-size: 2em;
 }
 
 .indent {
-    margin-left: 2em;
+    margin-left: 0;
 }
 
 .indent h4 {
@@ -87,12 +92,31 @@ code * {
 }
 
 
-nav a {
-    display: inline-block;
-    padding: 0.5em 1em;
-    background: #BB5544;
-    color: #fffafa;
-    text-decoration: none;
-    min-width: 100px;
-    text-align: center;
+@media only screen and (min-width: 800px) {
+
+    .indent {
+        margin-left: 2em;
+    }
+
+    header > div, div.header > div {
+        width: calc(800px - 2em);
+    }
+    body > *, body > div > div {
+        width: 800px;
+    }
+    header, div.header {
+        width: 100%;
+    }
+}
+
+@media only screen and (min-width: 1400px) {
+    header > div, div.header > div {
+        width: calc(1400px - 2em);
+    }
+    body > *, body > div > div {
+        width: 1400px;
+    }
+    header, div.header {
+        width: 100%;
+    }
 }

@@ -201,9 +201,41 @@ window.$ngine = {
       ObjParent.innerHTML = ObjParent.innerHTML.replace('<div>' + tmp.innerHTML + '</div>', result);
     }
   },
+  util: {
+    string: {
+      flatten: function flatten(str) {
+        var strEsc = false;
+        var out = '';
+        var quot = ['"', "'", '`'];
+        var esc = undefined;
+
+        for (var i = 0; i < str.length; i++) {
+          var c = str[i];
+          strEsc = strEsc && c == '`' ? false : c == '`' ? true : strEsc;
+          esc = typeof esc == 'undefined' ? quot[quot.indexOf(c)] : esc == quot[quot.indexOf(c)] ? undefined : esc;
+
+          if (c == '\r') {//out += '\\r';
+          } else if (c == '\n' && typeof esc != 'undefined') {
+            out += '\\n';
+          } else if (c == '`') {
+            out += '"';
+          } else if (c == '"' && strEsc) {
+            out += '\\"';
+          } else {
+            out += c;
+          }
+        }
+
+        console.log('flattened', out);
+        return out;
+      }
+    }
+  },
   eval: function _eval(expression, line, state) {
     var model = state.model;
     var url = state.url;
+    expression = $ngine.util.string.flatten(expression);
+    console.log(expression);
 
     try {
       var keys = Object.keys(model);

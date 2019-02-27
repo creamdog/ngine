@@ -170,11 +170,43 @@ window.$ngine = {
 			ObjParent.innerHTML=ObjParent.innerHTML.replace('<div>' + tmp.innerHTML + '</div>',result);
 		}
 	},
+	util: {
+		string : {
+			flatten : (str) => {
+				let strEsc = false;
+				let out = '';
+				let quot =['"', "'", '`'];
+				let esc = undefined;
+				for(var i=0;i<str.length;i++) {
+					const c = str[i];
+					strEsc = strEsc && c == '`' ? false : (c == '`' ? true : strEsc);
+					esc = typeof esc == 'undefined' ? quot[quot.indexOf(c)] : (esc == quot[quot.indexOf(c)] ? undefined : esc);
+					if(c == '\r') {
+						//out += '\\r';
+					} else if(c == '\n' && typeof esc != 'undefined') {
+						out += '\\n';
+					} else if(c == '`') {
+						out += '"';
+					} else if (c == '"' && strEsc) {
+						out += '\\"'
+					} else {
+						out += c;
+					}
+				}
+				console.log('flattened', out);
+				return out;
+			}
+		}
+	},
 	eval: (expression, line, state) => {
 
 		const model = state.model;
 		const url = state.url;
 
+		expression = $ngine.util.string.flatten(expression);
+
+		console.log(expression);
+		
 		try {
 			let keys = Object.keys(model);
 			let params = Object.keys(model).map(key => model[key]);
