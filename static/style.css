@@ -100,10 +100,16 @@ code * {
     color: #ffff;
     font-size: 18px;   
     margin: 0 0 -1em 0;   
-    padding:1em 0 0 0;
+    padding:1em 0;
+    list-style: none;
 }
 
 @media only screen and (min-width: 800px) {
+
+    .compat li {
+        display: inline-block;
+        margin: 0 0 0 1em;
+    }
 
     main, div.main {
         padding: 0;
@@ -117,7 +123,7 @@ code * {
         text-align: right;
         margin: 0;
         margin-bottom: -1em;  
-        padding: 0;
+        padding: 1em 0 0 0;
     }
 
     .indent {
@@ -144,5 +150,8 @@ code * {
     }
     header, div.header {
         width: 100%;
+    }
+    .compat {
+        padding: 0;
     }
 }

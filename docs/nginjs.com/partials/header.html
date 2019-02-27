@@ -13,12 +13,10 @@
         <h1>Ngine</h1>
         <i>just templating</i>   
         
-        <p class="compat">
-            <i>${['Internet Explorer 11','Edge', 'Chrome', 'Safari', 'Firefox'].map(function(browser){
-                    return '<span class="green">&#10004;</span>&nbsp;' + browser
-                }).join('&nbsp;')}
-            </i>
-        </p>
+        <ul class="compat">${['Internet Explorer 11','Edge', 'Chrome', 'Safari', 'Firefox'].map(function(browser){
+                return '<li><span class="green">&#10004;</span>&nbsp;' + browser + '</li>';
+            }).join('')}
+        </ul>
 
     </div> 
 
