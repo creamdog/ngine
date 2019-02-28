@@ -375,3 +375,4 @@ window.addEventListener("hashchange", function () {
   $ngine.render(url, model, callback);
 }, false);
 
+window.$ngine.version = "0.2.15";

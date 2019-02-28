@@ -32,6 +32,10 @@ body > *, body > div > div {
     width: 100%;
 }
 
+body > div:first-child > div {
+    line-height: 2em;
+}
+
 body > div > div {
     margin: 0 auto;
 }
