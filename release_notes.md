@@ -1,0 +1,20 @@
+# 0.3.0
+
+- $ngine.settings.disableCache = true|false
+- $ngine.version available in template rendering via "_ngine_version_"
+- keep list of build versions in file "versions"
+
+# 0.2.0
+
+- semantic versioning, available via "$ngine.version"
+- flatten template string literals for compatability
+- parse model data as JSON if content-type = application/json, otherwise set model to string content 
+
+# 0.1.0
+
+- cross browser implementation of embedded expressions "${..}"
+- cache template & model instances, reload and apply on request "$ngine.reload('${_ngine_template_instance_id_}')"
+
+# 0.0.0
+
+- based on ES2015 template literals and embedded expressions

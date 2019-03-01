@@ -3,6 +3,9 @@
 window.$ngine = {
 	cache: {},
 	state: {},
+	settings: {
+		disableCache: false,
+	},
 	interpolate : (str, evalFunc, line, state, n) => {
 
 		//console.log('input:', str, ', n:', n);
@@ -70,7 +73,17 @@ window.$ngine = {
 	load: (url, callback, id, asModel) => {	
 		const req = new XMLHttpRequest();
 
-		//console.log(url);
+		url = $ngine.settings.disableCache ? (function(url){
+			const a = document.createElement('a');
+			a.href = url;
+			let params = a.href.split('?')[1] ? a.href.split('?')[1].split('&') : [];
+			const cacheBuster = ['_nginev=' + $ngine.version];
+			params = params.concat(cacheBuster);
+			const queryString = params ? '?' + params.join('&') : '';
+			return a.protocol + '//' + a.host + a.pathname + queryString;
+		})(url) : url;
+
+		console.log(url);
 
 		req.addEventListener('load', (req) => {
 
@@ -193,7 +206,7 @@ window.$ngine = {
 						out += c;
 					}
 				}
-				console.log('flattened', out);
+				//console.log('flattened', out);
 				return out;
 			}
 		}
@@ -205,7 +218,7 @@ window.$ngine = {
 
 		expression = $ngine.util.string.flatten(expression);
 
-		console.log(expression);
+		//console.log(expression);
 		
 		try {
 			let keys = Object.keys(model);
@@ -267,8 +280,9 @@ window.$ngine = {
 				//console.log('model', model);
 
 				const state = {url: url, model: model, getModel: getModel, cache: {}, id: id};
-				model._ngine_template_id_ = id;
-				model._ngine_template_url_ = url;
+				model._ngine_template_instance_id_ = id;
+				model._ngine_template_instance_url_ = url;
+				model._ngine_version_ = $ngine.version;
 				const compiled = $ngine.interpolate(template, $ngine.eval, 0, state).toString();
 
 				const evalCallbackTargets = (callback) => {

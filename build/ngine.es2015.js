@@ -12,6 +12,9 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 window.$ngine = {
   cache: {},
   state: {},
+  settings: {
+    disableCache: false
+  },
   interpolate: function interpolate(str, evalFunc, line, state, n) {
     //console.log('input:', str, ', n:', n);
     n = typeof n == 'undefined' ? 0 : n;
@@ -92,8 +95,17 @@ window.$ngine = {
     return $ngine.interpolate(t, evalFunc, line, state).toString();
   },
   load: function load(url, callback, id, asModel) {
-    var req = new XMLHttpRequest(); //console.log(url);
-
+    var req = new XMLHttpRequest();
+    url = $ngine.settings.disableCache ? function (url) {
+      var a = document.createElement('a');
+      a.href = url;
+      var params = a.href.split('?')[1] ? a.href.split('?')[1].split('&') : [];
+      var cacheBuster = ['_nginev=' + $ngine.version];
+      params = params.concat(cacheBuster);
+      var queryString = params ? '?' + params.join('&') : '';
+      return a.protocol + '//' + a.host + a.pathname + queryString;
+    }(url) : url;
+    console.log(url);
     req.addEventListener('load', function (req) {
       var contentType = req.target.getResponseHeader('content-type') || '';
 
@@ -224,9 +236,9 @@ window.$ngine = {
           } else {
             out += c;
           }
-        }
+        } //console.log('flattened', out);
 
-        console.log('flattened', out);
+
         return out;
       }
     }
@@ -234,8 +246,7 @@ window.$ngine = {
   eval: function _eval(expression, line, state) {
     var model = state.model;
     var url = state.url;
-    expression = $ngine.util.string.flatten(expression);
-    console.log(expression);
+    expression = $ngine.util.string.flatten(expression); //console.log(expression);
 
     try {
       var keys = Object.keys(model);
@@ -309,8 +320,9 @@ window.$ngine = {
           cache: {},
           id: id
         };
-        model._ngine_template_id_ = id;
-        model._ngine_template_url_ = url;
+        model._ngine_template_instance_id_ = id;
+        model._ngine_template_instance_url_ = url;
+        model._ngine_version_ = $ngine.version;
         var compiled = $ngine.interpolate(template, $ngine.eval, 0, state).toString();
 
         var evalCallbackTargets = function evalCallbackTargets(callback) {
@@ -375,4 +387,4 @@ window.addEventListener("hashchange", function () {
   $ngine.render(url, model, callback);
 }, false);
 
-window.$ngine.version = "0.2.17";
+window.$ngine.version = "0.3.1";

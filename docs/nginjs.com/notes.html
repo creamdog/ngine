@@ -1,0 +1,15 @@
+${render('docs/nginjs.com/partials/header.html')}
+
+<main>
+
+    <h3>Release notes</h3>
+
+    ${
+        model
+        .replace(/#([\s0-9\.]*)([^#]*)/ig, '<h5>$1</h5> <ul>$2</ul>')
+        .replace(/-(.*)/ig, '<li>$1</li>')
+        .replace(/\$/ig, '&#36;')
+    }
+
+</main>
+

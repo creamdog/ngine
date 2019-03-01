@@ -15,7 +15,9 @@ ${render('docs/nginjs.com/partials/header.html')}
             'docs/nginjs.com/partials/header.html', 
             'docs/nginjs.com/partials/npm.html', 
             'docs/nginjs.com/partials/github.html', 
-            'docs/nginjs.com/partials/code.html', 'docs/nginjs.com/details.html'
+            'docs/nginjs.com/partials/code.html', 
+            'docs/nginjs.com/notes.html',
+            'docs/nginjs.com/details.html',
         ].map(function(file) { return `
 
             ${render('docs/nginjs.com/partials/code.html', window.location.protocol + '//' + window.location.host + '/' + file)}
