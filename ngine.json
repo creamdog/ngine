@@ -1,0 +1,15 @@
+{
+    "disableCache" : false,
+    "whitelist" : {
+        ".*" : {
+            "disableCache" : false
+        },
+        ".*\\.html$" : {
+            "disableCache" : true
+        },
+        ".*notes\\.html$" : {
+            "disableCache" : true,
+            "model" : "release_notes.md"
+        }
+    }
+}

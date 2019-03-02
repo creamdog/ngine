@@ -1,3 +1,8 @@
+# 0.4.0
+
+- optional ngine.json configuration, defines global settings & resource whitelist with local setting overrides and optional models
+- $ngine.render and $ngine.navigate falls back to render result in 'body' if no other targets are defined
+
 # 0.3.0
 
 - $ngine.settings.disableCache = true|false

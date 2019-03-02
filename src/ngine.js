@@ -2,13 +2,73 @@
 
 window.$ngine = {
 	cache: {},
-	state: {},
+	version: 'dev',
+	state: {
+		ready: false,
+		queue: [],
+	},
 	settings: {
 		disableCache: false,
 	},
-	interpolate : (str, evalFunc, line, state, n) => {
+	loadConfig: (url) => {
 
-		//console.log('input:', str, ', n:', n);
+		window.$ngine.state.ready = false;
+
+		$ngine.load(url, (result) => {
+
+			if(result && result.model && typeof result.model == 'object' && !result.model.error) {
+				$ngine.settings = $ngine.parseConfig(result.model);
+			}
+		
+			window.$ngine.state.ready = true;
+		
+			for(let i=0;i<$ngine.state.queue.length;i++) {
+				let action = $ngine.state.queue[i];
+				action.func.apply(this, action.args);
+			}
+		
+		}, 0, true, true);
+	},
+	parseConfig: (obj) => {
+
+		const assign = (a, b) => {
+			for(var key in b) {
+				a[key] = b[key];
+			}
+			return a;
+		}
+
+		let config = assign({}, obj);
+		if(typeof config.whitelist == 'object') {
+			let whitelist = [];
+			for(var key in config.whitelist) {
+				const expr = new RegExp(key, 'ig');
+				let localConfig = assign({}, config.whitelist[key]);
+				localConfig.str = key;
+				localConfig.expr = expr;
+				whitelist.push(localConfig);
+			}
+			whitelist.sort(function(a, b) {
+				return a.str.localeCompare(b.str);
+			});
+			config.whitelist = whitelist.reverse();
+		}
+		return config;
+	},
+	getUrlSettings: (url, defaultSettings) => {
+		if(Array.isArray($ngine.settings.whitelist)) {
+			const matches = $ngine.settings.whitelist.filter(function(item) {
+				return url.match(item.expr) != null;
+			});
+			if(matches.length == 0) {
+				throw {message: 'url: ' + url + ' does not match any whitelist entry defined in ngine.json'};
+			}
+			//console.log(matches);
+			return matches[0];
+		}
+		return defaultSettings;
+	},
+	interpolate : (str, evalFunc, line, state, n) => {
 
 		n = typeof n == 'undefined' ? 0 : n;
 		line = typeof line == 'undefined' ? 0 : line;
@@ -70,17 +130,21 @@ window.$ngine = {
 		const t = str.substr(0, start-1) + evalFunc(chunk, line, state) + str.substr(stop);
 		return $ngine.interpolate(t, evalFunc, line, state).toString();
 	},
-	load: (url, callback, id, asModel) => {	
+	load: (url, callback, id, asModel, overrideCache) => {
+		
+		let settings = $ngine.getUrlSettings(url, $ngine.settings);
+
 		const req = new XMLHttpRequest();
 
-		url = $ngine.settings.disableCache ? (function(url){
+		url = settings.disableCache || overrideCache === true ? (function(url){
 			const a = document.createElement('a');
 			a.href = url;
 			let params = a.href.split('?')[1] ? a.href.split('?')[1].split('&') : [];
-			const cacheBuster = ['_nginev=' + $ngine.version];
+			const cacheBuster = ['_ngine_cache_buster=' + $ngine.version + new Date().getTime() + (1000+Math.floor(Math.random()*1000))];
 			params = params.concat(cacheBuster);
 			const queryString = params ? '?' + params.join('&') : '';
-			return a.protocol + '//' + a.host + a.pathname + queryString;
+			const location = a.protocol || a.protocol.length > 0 ? a : window.location;
+			return location.protocol + '//' + (location.host + '/' + a.pathname).replace('//','/') + queryString;
 		})(url) : url;
 
 		console.log(url);
@@ -99,6 +163,10 @@ window.$ngine = {
 
 			return callback(payload, id);
 		});
+		req.addEventListener('error', (a, b, c) => {
+			console.log(a, b, c);
+		});
+
 		req.id = id;
 		req.open('GET', url);
 		req.send();
@@ -226,6 +294,11 @@ window.$ngine = {
 
 			keys.push('render');
 			params.push((url, model) => {
+
+				let settings = $ngine.getUrlSettings(url, $ngine.settings);
+				model = typeof model == 'undefined' && typeof settings.model != 'undefined' ? settings.model : model;
+				//console.log(url, settings, model);
+
 				const useState = typeof model == 'undefined';
 				model = typeof model == 'undefined' ? state.getModel : model;
 				//console.log(url, model);
@@ -252,17 +325,51 @@ window.$ngine = {
 		}
 
 	},
-	navigate: (url, model, callback) => {
-		window.location.hash = '#!' + url;
+	navigate: function (url, model, callback) {
+
+		if(!$ngine.state.ready) {
+			return $ngine.state.queue.push({
+				func: $ngine.navigate,
+				args: arguments,
+			});
+		}
+
+		if(!$ngine.state.hashchange) {
+			$ngine.state.hashchange = true;
+			const func = () => {
+				if(window.location.hash.indexOf('#!') != 0) return;
+				const url = window.location.hash.substr(2);
+				const model = $ngine.cache[url] ? $ngine.cache[url].model : undefined;
+				const callback = $ngine.cache[url] ? $ngine.cache[url].callback : undefined;
+				$ngine.render(url, model, callback);
+			};
+			window.addEventListener("hashchange", func, false);
+			if(window.location.hash.indexOf('#!') == 0) {
+				return func();
+			}
+		}
+
 		$ngine.cache[url] = {
 			model: model,
 			callback: callback,
 		};
-		return $ngine.render(url, model, callback);
-	},
-	render : (url, model, callback, state) => {
 
-		console.log('render', url, model);
+		window.location.hash = '#!' + url;
+
+		//return $ngine.render(url, model, callback);
+	},
+	render : function (url, model, callback, state) {
+
+		if(!$ngine.state.ready) {
+			return $ngine.state.queue.push({
+				func: $ngine.render,
+				args: arguments,
+			});
+		}
+
+		let settings = $ngine.getUrlSettings(url, $ngine.settings);
+		model = typeof model == 'undefined' && typeof settings.model != 'undefined' ? settings.model : model;
+		//console.log(url, settings, model);
 
 		const id = (100000 + Math.floor(Math.random() * 100000)) + '_' + new Date().getTime();
 
@@ -279,11 +386,15 @@ window.$ngine = {
 
 				//console.log('model', model);
 
+				model = typeof model == 'undefined' ? {} : model;
+
 				const state = {url: url, model: model, getModel: getModel, cache: {}, id: id};
 				model._ngine_template_instance_id_ = id;
 				model._ngine_template_instance_url_ = url;
 				model._ngine_version_ = $ngine.version;
 				const compiled = $ngine.interpolate(template, $ngine.eval, 0, state).toString();
+
+				callback = typeof callback == 'undefined' ? 'body' : callback;
 
 				const evalCallbackTargets = (callback) => {
 					if(typeof callback == 'undefined') return [];
@@ -338,10 +449,4 @@ window.$ngine = {
 	}
 };
 
-window.addEventListener("hashchange", () => {
-	if(window.location.hash.indexOf('#!') != 0) return;
-	const url = window.location.hash.substr(2);
-	const model = $ngine.cache[url] ? $ngine.cache[url].model : {};
-	const callback = $ngine.cache[url] ? $ngine.cache[url].callback : 'body';
-	$ngine.render(url, model, callback);
-}, false);
+window.$ngine.loadConfig('ngine.json');

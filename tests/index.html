@@ -1,20 +1,8 @@
 <html>
     <head>
         <script type="text/javascript" src="/src/ngine.js"></script>
-        <style>
-          body {
-            font-family: Georgia, 'Times New Roman', Times, serif;
-            font-size: 16px;
-          }
-          ul li img {
-            width: 100px;
-          }
-        </style>
     </head>
-  <body>
-    <script>
-        //https://api.github.com/gists/public
-        $ngine.render('partials/page.html', 'model.json', 'body');
-    </script>
+  <body onload="$ngine.render('weather.html', 'https://www.metaweather.com/api/location/search/?query=stockholm', 'body')">
+
   </body>
 </html>

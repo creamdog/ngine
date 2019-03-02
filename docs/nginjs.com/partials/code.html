@@ -1,5 +1,6 @@
-<h4>${url.replace(window.location.protocol + '//' + window.location.host, '')}</h4>
-<pre class="html"><code class="html">${model.trim().replace(/[&]/ig, '&amp;').replace(/[<]/ig, '&lt;').replace(/[>]/ig, '&gt;').replace(/\$/ig, '&#36;')}
+
+<h4>${url.replace(window.location.protocol + '//' + window.location.host, '').replace(/\?.*$/, '')}</h4>
+<pre class="${typeof model == 'object' ? 'json' : 'html'}"><code>${(typeof model == 'object' ? JSON.stringify(model, null, 2) : model).trim().replace(/[&]/ig, '&amp;').replace(/[<]/ig, '&lt;').replace(/[>]/ig, '&gt;').replace(/\$/ig, '&#36;')}
 </code></pre>
 
 <script>
