@@ -10,6 +10,10 @@
         ".*notes\\.html$" : {
             "disableCache" : true,
             "model" : "release_notes.md"
+        },
+        ".*documentation\\.html$" : {
+            "disableCache" : true,
+            "model" : "ngine.json"
         }
     }
 }

@@ -8,7 +8,7 @@ ${render('docs/nginjs.com/partials/header.html')}
     <div class="indent">
 
         <p>
-            Ngine will by default attempt to load any template and model from any host. Global settings apply.
+            Ngine will by default attempt to load resources from any host. Global Ngine settings apply.
         </p>
     
         <p>
@@ -35,37 +35,25 @@ ${render('docs/nginjs.com/partials/header.html')}
                         <code>ngine.json</code> is a static file served from the Ngine relative root. All global settings are overridden using this configuration file.
                     </p>
                     <p>
-                        The optional whitelist property of <code>ngine.json</code> is an objected keyed with regular expressions you wish to match against any resources Ngine should be able to load.
+                        The optional whitelist property of <code>ngine.json</code> is an object keyed with regular expressions you wish to match against resource urls Ngine should be able to load.
                     </p>
                     <p>
-                        Each entry in the whitelist has it's own local settings that will override any global setting.
+                        Each entry in the whitelist has it's own optional local settings, any defined local setting will override the corresponding global setting.
                     </p>
                     <p>
                         Each whitelist entry can also define a default model to use if no other is supplied to <code>$ngine.render</code> or <code>$ngine.navigate</code>. The model can either be a string (relative/absolute url) or a model object.
                     </p>
                     <p>
-                        The whitelist is sorted in reverse descending order, the top/longest match takes precedence. for example <code>notes.html</code> match all of <code>.*</code>, <code>.*\\.html$</code> and <code>.*notes\\.html$</code> but <code>.*notes\\.html$</code> will be one to get picked and applied.
+                        The whitelist is sorted in alphabetical descending order, the top/longest match takes precedence. for example <code>notes.html</code> match all of <code>.*</code>, <code>.*\\.html$</code> and <code>.*notes\\.html$</code> but <code>.*notes\\.html$</code> will be one to get picked and applied.
                     </p>
 
                     <p>
-                        <pre class="json"><code>${`
-    {
-        "disableCache" : false,
-        "whitelist" : {
-            ".*" : {
-                "disableCache" : false
-            },
-            ".*\\.html$" : {
-                "disableCache" : true
-            },
-            ".*notes\\.html$" : {
-                "disableCache" : true,
-                "model" : "release_notes.md"
-            }
-        }
-    }
-    `.replace(/[&]/ig, '&amp;').replace(/[<]/ig, '&lt;').replace(/[>]/ig, '&gt;').replace(/\$/ig, '&#36;')}</code></pre>
-
+                        <h4>ngine.json for this site</h4>
+                        <pre class="json"><code>${JSON.stringify(model, null, 2).trim()
+                        .replace(/[&]/ig, '&amp;')
+                        .replace(/[<]/ig, '&lt;')
+                        .replace(/[>]/ig, '&gt;')
+                        .replace(/\$/ig, '&#36;')}</code></pre>
                     </p>
 
                 </li>
@@ -78,7 +66,7 @@ ${render('docs/nginjs.com/partials/header.html')}
 
     <h4>$ngine.render(template, model, targets)</h4>
     <p>
-        Loads given &lt;template&gt; and renders using supplide &lt;model&gt;, result is applied to &lt;targets&gt;
+        Loads given &lt;template&gt; and renders using supplied &lt;model&gt;, result is applied to &lt;targets&gt;
     </p>
 
     <ul>
