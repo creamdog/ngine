@@ -26,8 +26,8 @@ window.$ngine = {
   loadConfig: function loadConfig(url) {
     window.$ngine.state.ready = false;
     $ngine.load(url, function (result) {
-      if (result && result.model && _typeof(result.model) == 'object' && !result.model.error) {
-        $ngine.settings = $ngine.parseConfig(result.model);
+      if (_typeof(result) == 'object') {
+        $ngine.settings = $ngine.parseConfig(result);
       }
 
       window.$ngine.state.ready = true;
@@ -184,14 +184,11 @@ window.$ngine = {
       var payload = function () {
         var data = req.target.status == 404 ? '{ "error" : "404 not found \'' + url + '\' " }' : req.target.responseText;
         data = contentType.indexOf('application/json') >= 0 ? JSON.parse(data) : data;
-        return asModel ? {
-          model: data,
-          url: url
-        } : data;
+        return data;
       }();
 
       var id = req.target.id;
-      return callback(payload, id);
+      return callback(payload, id, url);
     });
     req.addEventListener('error', function (a, b, c) {
       console.log(a, b, c);
@@ -319,7 +316,14 @@ window.$ngine = {
     }
   },
   eval: function _eval(expression, line, state) {
-    var model = state.model;
+    var model = {
+      model: state.model,
+      model_url: state.model_url,
+      _ngine_template_instance_id_: state.id,
+      _ngine_template_url_: state.template_url,
+      _ngine_model_url_: state.model_url,
+      _ngine_version_: $ngine.version
+    };
     var url = state.url;
     expression = $ngine.util.string.flatten(expression); //console.log(expression);
 
@@ -415,26 +419,25 @@ window.$ngine = {
     } : function (c) {
       c(model);
     };
-    getTemplate(function (template, id) {
+    getTemplate(function (template, id, template_url) {
       $ngine.cache[id] = {
         url: url,
         elements: [],
         model: model
       }; //console.log(url, template);
 
-      getModel(function (model, url) {
+      getModel(function (model, _, model_url) {
         //console.log('model', model);
         model = typeof model == 'undefined' ? {} : model;
         var state = {
           url: url,
           model: model,
+          model_url: model_url,
           getModel: getModel,
           cache: {},
-          id: id
+          id: id,
+          template_url: template_url
         };
-        model._ngine_template_instance_id_ = id;
-        model._ngine_template_instance_url_ = url;
-        model._ngine_version_ = $ngine.version;
         var compiled = $ngine.interpolate(template, $ngine.eval, 0, state).toString();
         callback = typeof callback == 'undefined' ? 'body' : callback;
 
@@ -494,4 +497,4 @@ window.$ngine = {
 };
 window.$ngine.loadConfig('ngine.json');
 
-window.$ngine.version = "0.4.12";
+window.$ngine.version = "0.4.13";

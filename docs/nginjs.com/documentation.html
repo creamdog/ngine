@@ -87,8 +87,8 @@ ${render('docs/nginjs.com/partials/header.html')}
             </p>
             <p>
                 <ul>
-                    <li>&lt;object&gt;: should be in the form of <code>{model: {...}}</code></li>
-                    <li>&lt;string&gt;: assumed to be an url, json will parsed into <code>{model: {...}}</code>, text will result in <code>{model: "..."}</code></li>
+                    <li>&lt;object&gt;: any javascript object <code>{...}</code></li>
+                    <li>&lt;string&gt;: assumed to be an url, json will get parsed, text will be made available as a plain string</li>
                     <li>&lt;function&gt;: assumed to be in the form of <code>function(callback){ ... callback(model, id); }</code></li>
                 </ul> 
             </p>
@@ -169,6 +169,11 @@ ${render('docs/nginjs.com/partials/header.html')}
     </p>
     <p>
         <b>*</b> url should be a string (relative/absolute url) 
+    </p>
+
+    <h4>Templating</h4>
+    <p>
+        Templates can be any text format, all the work is done via interpolated expressions. Expressions are all assumed to be browser compatible javascript with a few exceptions.
     </p>
 
 </main>

@@ -16,8 +16,8 @@ window.$ngine = {
 
 		$ngine.load(url, (result) => {
 
-			if(result && result.model && typeof result.model == 'object' && !result.model.error) {
-				$ngine.settings = $ngine.parseConfig(result.model);
+			if(typeof result == 'object') {
+				$ngine.settings = $ngine.parseConfig(result);
 			}
 		
 			window.$ngine.state.ready = true;
@@ -156,12 +156,12 @@ window.$ngine = {
 			const payload = (function(){
 				let data = req.target.status == 404 ? '{ "error" : "404 not found \'' + url + '\' " }' : req.target.responseText;
 				data = contentType.indexOf('application/json') >= 0 ? JSON.parse(data) : data;
-				return asModel ? {model: data, url: url} : data;
+				return data;
 			})();
 
 			const id = req.target.id;
 
-			return callback(payload, id);
+			return callback(payload, id, url);
 		});
 		req.addEventListener('error', (a, b, c) => {
 			console.log(a, b, c);
@@ -281,7 +281,15 @@ window.$ngine = {
 	},
 	eval: (expression, line, state) => {
 
-		const model = state.model;
+		const model = {
+			model: state.model,
+			model_url: state.model_url,
+			_ngine_template_instance_id_: state.id,
+			_ngine_template_url_: state.template_url,
+			_ngine_model_url_: state.model_url,
+			_ngine_version_: $ngine.version,
+		};
+
 		const url = state.url;
 
 		expression = $ngine.util.string.flatten(expression);
@@ -376,22 +384,20 @@ window.$ngine = {
 		const getTemplate = typeof url == 'function' ? (callback) => url(template => callback(template, id)) : (callback) => $ngine.load(url, callback, id);
 		const getModel = state && state.getModel ? state.getModel : (typeof model == 'function' ? (c) => { model(c); } : (typeof model == 'string' ? (c) => { $ngine.load(model, c, id, true); } : (c) => { c(model); } ));
 
-		getTemplate((template, id) => {
+		getTemplate((template, id, template_url) => {
 
 			$ngine.cache[id] = {url: url, elements:[], model:model};
 
 			//console.log(url, template);
 
-			getModel((model, url) => {
+			getModel((model, _, model_url) => {
 
 				//console.log('model', model);
 
 				model = typeof model == 'undefined' ? {} : model;
 
-				const state = {url: url, model: model, getModel: getModel, cache: {}, id: id};
-				model._ngine_template_instance_id_ = id;
-				model._ngine_template_instance_url_ = url;
-				model._ngine_version_ = $ngine.version;
+				const state = {url: url, model: model, model_url: model_url, getModel: getModel, cache: {}, id: id, template_url: template_url};
+
 				const compiled = $ngine.interpolate(template, $ngine.eval, 0, state).toString();
 
 				callback = typeof callback == 'undefined' ? 'body' : callback;
