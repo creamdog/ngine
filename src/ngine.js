@@ -63,7 +63,7 @@ window.$ngine = {
 			if(matches.length == 0) {
 				throw {message: 'url: ' + url + ' does not match any whitelist entry defined in ngine.json'};
 			}
-			//console.log(matches);
+			console.log('config match', url, matches);
 			return matches[0];
 		}
 		return defaultSettings;
@@ -377,7 +377,8 @@ window.$ngine = {
 
 		let settings = $ngine.getUrlSettings(url, $ngine.settings);
 		model = typeof model == 'undefined' && typeof settings.model != 'undefined' ? settings.model : model;
-		//console.log(url, settings, model);
+		callback = typeof callback == 'undefined' && typeof settings.target != 'undefined' ? settings.target : callback;
+		console.log(url, settings, model, callback);
 
 		const id = (100000 + Math.floor(Math.random() * 100000)) + '_' + new Date().getTime();
 
