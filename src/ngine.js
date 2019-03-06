@@ -342,13 +342,27 @@ window.$ngine = {
 			});
 		}
 
+		console.log(url, model, callback);
+
 		if(!$ngine.state.hashchange) {
 			$ngine.state.hashchange = true;
 			const func = () => {
 				if(window.location.hash.indexOf('#!') != 0) return;
 				const url = window.location.hash.substr(2);
-				const model = $ngine.cache[url] ? $ngine.cache[url].model : undefined;
+
+				const params = url.split('?')[1] ? url.split('?')[1].split('&') : [];
+
+				const url_model = params.map(function(param) {
+					return param.split('=')[0] == '_ngine_model' ? decodeURIComponent(param.split('=')[1]) : null;
+				}).filter(function(model) {
+					return model != null;
+				}).map(function(model) {
+					return model && model[0] == '{' ? JSON.parse(model) : model;
+				})[0];
+
+				const model = $ngine.cache[url] ? $ngine.cache[url].model : (url_model ? url_model : undefined);
 				const callback = $ngine.cache[url] ? $ngine.cache[url].callback : undefined;
+
 				$ngine.render(url, model, callback);
 			};
 			window.addEventListener("hashchange", func, false);
@@ -362,9 +376,17 @@ window.$ngine = {
 			callback: callback,
 		};
 
-		window.location.hash = '#!' + url;
+		url = (function(url){
+			if(typeof model == 'undefined') return url;
+			let params = url.split('?')[1] ? url.split('?')[1].split('&') : [];
+			url = url.split('?')[0];
+			const smodel = typeof model == 'object' ? JSON.stringify(model) : model;
+			params = params.concat(['_ngine_model=' + encodeURIComponent(smodel)]);
+			const queryString = params ? '?' + params.join('&') : '';
+			return url + queryString;
+		})(url);
 
-		//return $ngine.render(url, model, callback);
+		window.location.hash = '#!' + url;
 	},
 	render : function (url, model, callback, state) {
 

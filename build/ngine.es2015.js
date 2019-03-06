@@ -369,13 +369,23 @@ window.$ngine = {
       });
     }
 
+    console.log(url, model, callback);
+
     if (!$ngine.state.hashchange) {
       $ngine.state.hashchange = true;
 
       var func = function func() {
         if (window.location.hash.indexOf('#!') != 0) return;
         var url = window.location.hash.substr(2);
-        var model = $ngine.cache[url] ? $ngine.cache[url].model : undefined;
+        var params = url.split('?')[1] ? url.split('?')[1].split('&') : [];
+        var url_model = params.map(function (param) {
+          return param.split('=')[0] == '_ngine_model' ? decodeURIComponent(param.split('=')[1]) : null;
+        }).filter(function (model) {
+          return model != null;
+        }).map(function (model) {
+          return model && model[0] == '{' ? JSON.parse(model) : model;
+        })[0];
+        var model = $ngine.cache[url] ? $ngine.cache[url].model : url_model ? url_model : undefined;
         var callback = $ngine.cache[url] ? $ngine.cache[url].callback : undefined;
         $ngine.render(url, model, callback);
       };
@@ -391,7 +401,18 @@ window.$ngine = {
       model: model,
       callback: callback
     };
-    window.location.hash = '#!' + url; //return $ngine.render(url, model, callback);
+
+    url = function (url) {
+      if (typeof model == 'undefined') return url;
+      var params = url.split('?')[1] ? url.split('?')[1].split('&') : [];
+      url = url.split('?')[0];
+      var smodel = _typeof(model) == 'object' ? JSON.stringify(model) : model;
+      params = params.concat(['_ngine_model=' + encodeURIComponent(smodel)]);
+      var queryString = params ? '?' + params.join('&') : '';
+      return url + queryString;
+    }(url);
+
+    window.location.hash = '#!' + url;
   },
   render: function render(url, model, callback, state) {
     if (!$ngine.state.ready) {
@@ -498,4 +519,4 @@ window.$ngine = {
 };
 window.$ngine.loadConfig('ngine.json');
 
-window.$ngine.version = "0.4.17";
+window.$ngine.version = "0.4.18";
