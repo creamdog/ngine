@@ -1,3 +1,8 @@
+# 0.5.0
+
+- $ngine.navigate appends model to hashbang
+- ngine.json whitelist target override option
+
 # 0.4.0
 
 - optional ngine.json configuration, defines global settings & resource whitelist with local setting overrides and optional models

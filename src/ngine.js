@@ -63,7 +63,7 @@ window.$ngine = {
 			if(matches.length == 0) {
 				throw {message: 'url: ' + url + ' does not match any whitelist entry defined in ngine.json'};
 			}
-			console.log('config match', url, matches);
+			//console.log('config match', url, matches);
 			return matches[0];
 		}
 		return defaultSettings;
@@ -136,18 +136,23 @@ window.$ngine = {
 
 		const req = new XMLHttpRequest();
 
-		url = settings.disableCache || overrideCache === true ? (function(url){
+		url = (function(url){
 			const a = document.createElement('a');
 			a.href = url;
 			let params = a.href.split('?')[1] ? a.href.split('?')[1].split('&') : [];
+			
 			const cacheBuster = ['_ngine_cache_buster=' + $ngine.version + new Date().getTime() + (1000+Math.floor(Math.random()*1000))];
-			params = params.concat(cacheBuster);
+			
+			params = settings.disableCache || overrideCache === true ? params.concat(cacheBuster)  : params;
+
+			params = params.filter(function(param) {return param.split('=')[0] != '_ngine_model';});
+
 			const queryString = params ? '?' + params.join('&') : '';
 			const location = a.protocol || a.protocol.length > 0 ? a : window.location;
 			return location.protocol + '//' + (location.host + '/' + a.pathname).replace('//','/') + queryString;
-		})(url) : url;
+		})(url);
 
-		console.log(url);
+		//console.log(url);
 
 		req.addEventListener('load', (req) => {
 
@@ -342,7 +347,7 @@ window.$ngine = {
 			});
 		}
 
-		console.log(url, model, callback);
+		//console.log(url, model, callback);
 
 		if(!$ngine.state.hashchange) {
 			$ngine.state.hashchange = true;
@@ -400,7 +405,7 @@ window.$ngine = {
 		let settings = $ngine.getUrlSettings(url, $ngine.settings);
 		model = typeof model == 'undefined' && typeof settings.model != 'undefined' ? settings.model : model;
 		callback = typeof callback == 'undefined' && typeof settings.target != 'undefined' ? settings.target : callback;
-		console.log(url, settings, model, callback);
+		//console.log(url, settings, model, callback);
 
 		const id = (100000 + Math.floor(Math.random() * 100000)) + '_' + new Date().getTime();
 
