@@ -189,7 +189,7 @@ window.$ngine = {
 			t.parentNode.insertBefore(target, t);
 			for(var i=0;i<$ngine.cache[id].elements.length;i++) {
 				const e = $ngine.cache[id].elements[i];
-				e.parentNode.removeChild(e);
+				if(e.parentNode) e.parentNode.removeChild(e);
 			}
 			$ngine.apply(target, newId, result);		
 		});
@@ -253,6 +253,7 @@ window.$ngine = {
 			tmp.innerHTML = '<!--8a002e27-eca8-4fdc-9b1b-41d2c1468d5f-->';
 			let ObjParent=target.parentNode; 
 			ObjParent.replaceChild(tmp,target);
+			$ngine.cache[id].elements = [tmp];
 			ObjParent.innerHTML=ObjParent.innerHTML.replace('<div>' + tmp.innerHTML + '</div>',result);
 		}
 	},

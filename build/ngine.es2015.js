@@ -218,7 +218,7 @@ window.$ngine = {
 
       for (var i = 0; i < $ngine.cache[id].elements.length; i++) {
         var e = $ngine.cache[id].elements[i];
-        e.parentNode.removeChild(e);
+        if (e.parentNode) e.parentNode.removeChild(e);
       }
 
       $ngine.apply(target, newId, result);
@@ -287,6 +287,7 @@ window.$ngine = {
       tmp.innerHTML = '<!--8a002e27-eca8-4fdc-9b1b-41d2c1468d5f-->';
       var ObjParent = target.parentNode;
       ObjParent.replaceChild(tmp, target);
+      $ngine.cache[id].elements = [tmp];
       ObjParent.innerHTML = ObjParent.innerHTML.replace('<div>' + tmp.innerHTML + '</div>', result);
     }
   },
@@ -523,4 +524,4 @@ window.$ngine = {
 };
 window.$ngine.loadConfig('ngine.json');
 
-window.$ngine.version = "0.5.2";
+window.$ngine.version = "0.5.4";
