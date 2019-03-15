@@ -184,8 +184,16 @@ window.$ngine = {
 
 
 		$ngine.render($ngine.cache[id].url, getModel, (result, newId) => {
+			
 			var t = $ngine.cache[id].elements[0];
+
+			for(var i=0;i<$ngine.cache[id].elements.length;i++) {
+				if(typeof t.parentNode != 'undefined' && t.parentNode != null) break;
+				t = $ngine.cache[id].elements[i];
+			}
+
 			var target = document.createElement('div');
+
 			t.parentNode.insertBefore(target, t);
 			for(var i=0;i<$ngine.cache[id].elements.length;i++) {
 				const e = $ngine.cache[id].elements[i];

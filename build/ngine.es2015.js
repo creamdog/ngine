@@ -213,6 +213,12 @@ window.$ngine = {
     };
     $ngine.render($ngine.cache[id].url, getModel, function (result, newId) {
       var t = $ngine.cache[id].elements[0];
+
+      for (var i = 0; i < $ngine.cache[id].elements.length; i++) {
+        if (typeof t.parentNode != 'undefined' && t.parentNode != null) break;
+        t = $ngine.cache[id].elements[i];
+      }
+
       var target = document.createElement('div');
       t.parentNode.insertBefore(target, t);
 
@@ -524,4 +530,4 @@ window.$ngine = {
 };
 window.$ngine.loadConfig('ngine.json');
 
-window.$ngine.version = "0.5.4";
+window.$ngine.version = "0.5.5";
