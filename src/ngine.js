@@ -17,7 +17,10 @@ window.$ngine = {
 		$ngine.load(url, (result) => {
 
 			if(typeof result == 'object') {
-				$ngine.settings = $ngine.parseConfig(result);
+				const settings = $ngine.parseConfig(result);
+				for(var key in settings) {
+					$ngine.settings[key] = settings[key];
+				}
 			}
 		
 			window.$ngine.state.ready = true;
@@ -295,14 +298,28 @@ window.$ngine = {
 	},
 	eval: (expression, line, state) => {
 
-		const model = {
-			model: state.model,
-			model_url: state.model_url,
-			_ngine_template_instance_id_: state.id,
-			_ngine_template_url_: state.template_url,
-			_ngine_model_url_: state.model_url,
-			_ngine_version_: $ngine.version,
-		};
+		const model =(function(){
+			let obj = {};
+			if(typeof $ngine.settings.env == 'object') {
+				for(var key in $ngine.settings.env) {
+					obj[key] = $ngine.settings.env[key];
+				}
+			}
+			const env = {
+				model: state.model,
+				model_url: state.model_url,
+				_ngine_template_instance_id_: state.id,
+				_ngine_template_url_: state.template_url,
+				_ngine_model_url_: state.model_url,
+				_ngine_version_: $ngine.version,
+			};
+			for(var key in env) {
+				obj[key] = env[key];
+			}
+			return obj;
+		})();
+
+		//console.log(model);
 
 		const url = state.url;
 

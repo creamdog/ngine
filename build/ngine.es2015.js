@@ -27,7 +27,11 @@ window.$ngine = {
     window.$ngine.state.ready = false;
     $ngine.load(url, function (result) {
       if (_typeof(result) == 'object') {
-        $ngine.settings = $ngine.parseConfig(result);
+        var settings = $ngine.parseConfig(result);
+
+        for (var key in settings) {
+          $ngine.settings[key] = settings[key];
+        }
       }
 
       window.$ngine.state.ready = true;
@@ -328,14 +332,32 @@ window.$ngine = {
     }
   },
   eval: function _eval(expression, line, state) {
-    var model = {
-      model: state.model,
-      model_url: state.model_url,
-      _ngine_template_instance_id_: state.id,
-      _ngine_template_url_: state.template_url,
-      _ngine_model_url_: state.model_url,
-      _ngine_version_: $ngine.version
-    };
+    var model = function () {
+      var obj = {};
+
+      if (_typeof($ngine.settings.env) == 'object') {
+        for (var key in $ngine.settings.env) {
+          obj[key] = $ngine.settings.env[key];
+        }
+      }
+
+      var env = {
+        model: state.model,
+        model_url: state.model_url,
+        _ngine_template_instance_id_: state.id,
+        _ngine_template_url_: state.template_url,
+        _ngine_model_url_: state.model_url,
+        _ngine_version_: $ngine.version
+      };
+
+      for (var key in env) {
+        obj[key] = env[key];
+      }
+
+      return obj;
+    }(); //console.log(model);
+
+
     var url = state.url;
     expression = $ngine.util.string.flatten(expression); //console.log(expression);
 
@@ -530,4 +552,4 @@ window.$ngine = {
 };
 window.$ngine.loadConfig('ngine.json');
 
-window.$ngine.version = "0.5.5";
+window.$ngine.version = "0.5.9";
