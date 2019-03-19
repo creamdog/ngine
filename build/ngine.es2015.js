@@ -361,6 +361,33 @@ window.$ngine = {
     var url = state.url;
     expression = $ngine.util.string.flatten(expression); //console.log(expression);
 
+    var transformFunctions = {
+      '!': function _(str) {
+        return str.replace(/[&]/ig, '&amp;').replace(/[<]/ig, '&lt;').replace(/[>]/ig, '&gt;').replace(/\$/ig, '&#36;');
+      },
+      'e': function e(str) {
+        return encodeURIComponent(str);
+      },
+      'd': function d(str) {
+        return decodeURIComponent(str);
+      },
+      'U': function U(str) {
+        return str.toUpperCase();
+      },
+      'l': function l(str) {
+        return str.toLowerCase();
+      }
+    };
+
+    var transforms = function (expression) {
+      if (expression.trim().indexOf(':') != 0 || expression.trim().indexOf(';') < 0) return [];
+      var transforms = expression.substr(1, expression.trim().indexOf(';') - 1);
+      return transforms.split('');
+    }(expression);
+
+    expression = transforms.length > 0 ? expression.substr(expression.trim().indexOf(';') + 1) : expression;
+    console.log('options', transforms);
+
     try {
       var keys = Object.keys(model);
       var params = Object.keys(model).map(function (key) {
@@ -381,7 +408,19 @@ window.$ngine = {
       });
       var obj = 'function(' + keys.join(',') + '){ return (' + expression + ') }'; //console.log('eval', obj);
 
-      var result = Function('"use strict";return (' + obj + ')')().apply(void 0, _toConsumableArray(params)); //console.log('result', result);
+      var transform = function transform(str, list) {
+        if (list.length == 0) return str;
+        var key = list.shift();
+        var func = transformFunctions[key];
+
+        if (typeof func != 'function') {
+          return '{{ ngine: unknown transform "' + key + '" }}';
+        }
+
+        return transform(func(str), list);
+      };
+
+      var result = transform(Function('"use strict";return (' + obj + ')')().apply(void 0, _toConsumableArray(params)), transforms); //console.log('result', result);
 
       return result;
     } catch (e) {
@@ -552,4 +591,4 @@ window.$ngine = {
 };
 window.$ngine.loadConfig('ngine.json');
 
-window.$ngine.version = "0.5.9";
+window.$ngine.version = "0.5.10";

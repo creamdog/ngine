@@ -326,6 +326,37 @@ window.$ngine = {
 		expression = $ngine.util.string.flatten(expression);
 
 		//console.log(expression);
+
+		const transformFunctions = {
+			'!' : function(str) {
+				return str.replace(/[&]/ig, '&amp;')
+				.replace(/[<]/ig, '&lt;')
+				.replace(/[>]/ig, '&gt;')
+				.replace(/\$/ig, '&#36;');
+			},
+			'e' : function(str) {
+				return encodeURIComponent(str);
+			},
+			'd' : function(str) {
+				return decodeURIComponent(str);
+			},
+			'U' : function(str) {
+				return str.toUpperCase();
+			},
+			'l' : function(str) {
+				return str.toLowerCase();
+			},
+		}
+
+		const transforms = (function(expression){
+			if(expression.trim().indexOf(':') != 0 || expression.trim().indexOf(';') < 0) return [];
+			const transforms = expression.substr(1, expression.trim().indexOf(';') - 1);
+			return transforms.split('');
+		})(expression);
+
+		expression = transforms.length > 0 ? expression.substr(expression.trim().indexOf(';') + 1) : expression;
+
+		console.log('options', transforms);
 		
 		try {
 			let keys = Object.keys(model);
@@ -349,7 +380,19 @@ window.$ngine = {
 
 			const obj = 'function(' + keys.join(',') + '){ return (' + expression + ') }';
 			//console.log('eval', obj);
-			const result = Function('"use strict";return (' + obj + ')')()( ...params );
+
+			const transform = function(str, list) {
+				if(list.length==0) return str;
+				const key = list.shift();
+				const func = transformFunctions[key];
+				if(typeof func != 'function') {
+					return '{{ ngine: unknown transform "'+ key +'" }}';
+				}
+				return transform(func(str), list);
+			}
+
+			const result = transform(Function('"use strict";return (' + obj + ')')()( ...params ), transforms);
+
 			//console.log('result', result);
 			return result;
 		} catch(e) {

@@ -1,3 +1,12 @@
+
+# 0.5.10
+
+- expression transform functions ${:!edUl;model...}
+
+# 0.5.9
+
+- declare functions and variables available for expressions using $ngine.settins.env = { ... }
+
 # 0.5.0
 
 - $ngine.navigate appends model to hashbang
