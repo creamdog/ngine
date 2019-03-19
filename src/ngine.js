@@ -356,7 +356,7 @@ window.$ngine = {
 
 		expression = transforms.length > 0 ? expression.substr(expression.trim().indexOf(';') + 1) : expression;
 
-		console.log('options', transforms);
+		//console.log('options', transforms);
 		
 		try {
 			let keys = Object.keys(model);

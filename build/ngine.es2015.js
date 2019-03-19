@@ -385,8 +385,7 @@ window.$ngine = {
       return transforms.split('');
     }(expression);
 
-    expression = transforms.length > 0 ? expression.substr(expression.trim().indexOf(';') + 1) : expression;
-    console.log('options', transforms);
+    expression = transforms.length > 0 ? expression.substr(expression.trim().indexOf(';') + 1) : expression; //console.log('options', transforms);
 
     try {
       var keys = Object.keys(model);
@@ -591,4 +590,4 @@ window.$ngine = {
 };
 window.$ngine.loadConfig('ngine.json');
 
-window.$ngine.version = "0.5.10";
+window.$ngine.version = "0.5.11";
