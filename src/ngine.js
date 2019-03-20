@@ -71,6 +71,27 @@ window.$ngine = {
 		}
 		return defaultSettings;
 	},
+	transformFunctions : {
+		'!' : function(str) {
+			return str.replace(/[&]/ig, '&amp;')
+			.replace(/[<]/ig, '&lt;')
+			.replace(/[>]/ig, '&gt;')
+			.replace(/\$/ig, '&#36;')
+			.replace(/"/ig, '&quot;');
+		},
+		'e' : function(str) {
+			return encodeURIComponent(str);
+		},
+		'd' : function(str) {
+			return decodeURIComponent(str);
+		},
+		'U' : function(str) {
+			return str.toUpperCase();
+		},
+		'l' : function(str) {
+			return str.toLowerCase();
+		},
+	},
 	interpolate : (str, evalFunc, line, state, n) => {
 
 		n = typeof n == 'undefined' ? 0 : n;
@@ -128,12 +149,25 @@ window.$ngine = {
 		//const strChr = stresc.length > 0 ? stresc[stresc.length-1] : null;
 		chunk = $ngine.interpolate(chunk, evalFunc, line, state, n + 1);
 
+		const transforms = (function(expression){
+			if(expression.trim().indexOf(':') != 0 || expression.trim().indexOf(';') < 0) return [];
+			const transforms = expression.substr(1, expression.trim().indexOf(';') - 1);
+			return transforms.split('');
+		})(chunk);
+
 		var stripTransforms = function(str) {
 			str = str || '';
 			return str.indexOf(':') == 0 && str.indexOf(';') > 0 ? str.substr(str.indexOf(';') + 1) : str;
 		}
+		
+		const wrapTransforms = function(str) {
+			for(var key in transforms) {
+				str = 'transforms[\''+transforms[key]+'\'](' + str + ')';
+			}
+			return str;
+		}
 
-		chunk = strChr != null && n > 0 ? strChr + '+ ( ' + stripTransforms(chunk) + ' ) +' + strChr : chunk;
+		chunk = strChr != null && n > 0 ? strChr + '+ ( ' + wrapTransforms(stripTransforms(chunk)) + ' ) +' + strChr : chunk;
 		if(n > 0) return $ngine.interpolate(str.substr(0, start-1) + chunk + str.substr(stop), evalFunc, line, state, n + 1);
 		//console.log('eval', chunk);
 		const t = str.substr(0, start-1) + evalFunc(chunk, line, state) + str.substr(stop);
@@ -314,6 +348,7 @@ window.$ngine = {
 			const env = {
 				model: state.model,
 				model_url: state.model_url,
+				transforms: $ngine.transformFunctions,
 				_ngine_template_instance_id_: state.id,
 				_ngine_template_url_: state.template_url,
 				_ngine_model_url_: state.model_url,
@@ -333,27 +368,8 @@ window.$ngine = {
 
 		//console.log(expression);
 
-		const transformFunctions = {
-			'!' : function(str) {
-				return str.replace(/[&]/ig, '&amp;')
-				.replace(/[<]/ig, '&lt;')
-				.replace(/[>]/ig, '&gt;')
-				.replace(/\$/ig, '&#36;')
-				.replace(/"/ig, '&quot;');
-			},
-			'e' : function(str) {
-				return encodeURIComponent(str);
-			},
-			'd' : function(str) {
-				return decodeURIComponent(str);
-			},
-			'U' : function(str) {
-				return str.toUpperCase();
-			},
-			'l' : function(str) {
-				return str.toLowerCase();
-			},
-		}
+		//console.log(expression);
+
 
 		const transforms = (function(expression){
 			if(expression.trim().indexOf(':') != 0 || expression.trim().indexOf(';') < 0) return [];
@@ -363,11 +379,12 @@ window.$ngine = {
 
 		expression = transforms.length > 0 ? expression.substr(expression.trim().indexOf(';') + 1) : expression;
 
-		//console.log('options', transforms);
+		//console.log('options', transforms, expression);
 		
 		try {
 			let keys = Object.keys(model);
 			let params = Object.keys(model).map(key => model[key]);
+		
 
 			keys.push('render');
 			params.push((url, model) => {
@@ -391,7 +408,7 @@ window.$ngine = {
 			const transform = function(str, list) {
 				if(list.length==0) return str;
 				const key = list.shift();
-				const func = transformFunctions[key];
+				const func = $ngine.transformFunctions[key];
 				if(typeof func != 'function') {
 					return '{{ ngine: unknown transform "'+ key +'" }}';
 				}

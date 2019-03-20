@@ -90,6 +90,23 @@ window.$ngine = {
 
     return defaultSettings;
   },
+  transformFunctions: {
+    '!': function _(str) {
+      return str.replace(/[&]/ig, '&amp;').replace(/[<]/ig, '&lt;').replace(/[>]/ig, '&gt;').replace(/\$/ig, '&#36;').replace(/"/ig, '&quot;');
+    },
+    'e': function e(str) {
+      return encodeURIComponent(str);
+    },
+    'd': function d(str) {
+      return decodeURIComponent(str);
+    },
+    'U': function U(str) {
+      return str.toUpperCase();
+    },
+    'l': function l(str) {
+      return str.toLowerCase();
+    }
+  },
   interpolate: function interpolate(str, evalFunc, line, state, n) {
     n = typeof n == 'undefined' ? 0 : n;
     line = typeof line == 'undefined' ? 0 : line;
@@ -163,12 +180,26 @@ window.$ngine = {
 
     chunk = $ngine.interpolate(chunk, evalFunc, line, state, n + 1);
 
+    var transforms = function (expression) {
+      if (expression.trim().indexOf(':') != 0 || expression.trim().indexOf(';') < 0) return [];
+      var transforms = expression.substr(1, expression.trim().indexOf(';') - 1);
+      return transforms.split('');
+    }(chunk);
+
     var stripTransforms = function stripTransforms(str) {
       str = str || '';
       return str.indexOf(':') == 0 && str.indexOf(';') > 0 ? str.substr(str.indexOf(';') + 1) : str;
     };
 
-    chunk = strChr != null && n > 0 ? strChr + '+ ( ' + stripTransforms(chunk) + ' ) +' + strChr : chunk;
+    var wrapTransforms = function wrapTransforms(str) {
+      for (var key in transforms) {
+        str = 'transforms[\'' + transforms[key] + '\'](' + str + ')';
+      }
+
+      return str;
+    };
+
+    chunk = strChr != null && n > 0 ? strChr + '+ ( ' + wrapTransforms(stripTransforms(chunk)) + ' ) +' + strChr : chunk;
     if (n > 0) return $ngine.interpolate(str.substr(0, start - 1) + chunk + str.substr(stop), evalFunc, line, state, n + 1); //console.log('eval', chunk);
 
     var t = str.substr(0, start - 1) + evalFunc(chunk, line, state) + str.substr(stop);
@@ -350,6 +381,7 @@ window.$ngine = {
       var env = {
         model: state.model,
         model_url: state.model_url,
+        transforms: $ngine.transformFunctions,
         _ngine_template_instance_id_: state.id,
         _ngine_template_url_: state.template_url,
         _ngine_model_url_: state.model_url,
@@ -366,24 +398,7 @@ window.$ngine = {
 
     var url = state.url;
     expression = $ngine.util.string.flatten(expression); //console.log(expression);
-
-    var transformFunctions = {
-      '!': function _(str) {
-        return str.replace(/[&]/ig, '&amp;').replace(/[<]/ig, '&lt;').replace(/[>]/ig, '&gt;').replace(/\$/ig, '&#36;').replace(/"/ig, '&quot;');
-      },
-      'e': function e(str) {
-        return encodeURIComponent(str);
-      },
-      'd': function d(str) {
-        return decodeURIComponent(str);
-      },
-      'U': function U(str) {
-        return str.toUpperCase();
-      },
-      'l': function l(str) {
-        return str.toLowerCase();
-      }
-    };
+    //console.log(expression);
 
     var transforms = function (expression) {
       if (expression.trim().indexOf(':') != 0 || expression.trim().indexOf(';') < 0) return [];
@@ -391,7 +406,7 @@ window.$ngine = {
       return transforms.split('');
     }(expression);
 
-    expression = transforms.length > 0 ? expression.substr(expression.trim().indexOf(';') + 1) : expression; //console.log('options', transforms);
+    expression = transforms.length > 0 ? expression.substr(expression.trim().indexOf(';') + 1) : expression; //console.log('options', transforms, expression);
 
     try {
       var keys = Object.keys(model);
@@ -416,7 +431,7 @@ window.$ngine = {
       var transform = function transform(str, list) {
         if (list.length == 0) return str;
         var key = list.shift();
-        var func = transformFunctions[key];
+        var func = $ngine.transformFunctions[key];
 
         if (typeof func != 'function') {
           return '{{ ngine: unknown transform "' + key + '" }}';
@@ -596,4 +611,4 @@ window.$ngine = {
 };
 window.$ngine.loadConfig('ngine.json');
 
-window.$ngine.version = "0.5.13";
+window.$ngine.version = "0.5.14";
