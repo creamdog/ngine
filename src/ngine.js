@@ -127,7 +127,13 @@ window.$ngine = {
 		}	
 		//const strChr = stresc.length > 0 ? stresc[stresc.length-1] : null;
 		chunk = $ngine.interpolate(chunk, evalFunc, line, state, n + 1);
-		chunk = strChr != null && n > 0 ? strChr + '+ ( ' + chunk + ' ) +' + strChr : chunk;
+
+		var stripTransforms = function(str) {
+			str = str || '';
+			return str.indexOf(':') == 0 && str.indexOf(';') > 0 ? str.substr(str.indexOf(';') + 1) : str;
+		}
+
+		chunk = strChr != null && n > 0 ? strChr + '+ ( ' + stripTransforms(chunk) + ' ) +' + strChr : chunk;
 		if(n > 0) return $ngine.interpolate(str.substr(0, start-1) + chunk + str.substr(stop), evalFunc, line, state, n + 1);
 		//console.log('eval', chunk);
 		const t = str.substr(0, start-1) + evalFunc(chunk, line, state) + str.substr(stop);

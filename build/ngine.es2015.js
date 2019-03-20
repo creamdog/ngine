@@ -162,7 +162,13 @@ window.$ngine = {
 
 
     chunk = $ngine.interpolate(chunk, evalFunc, line, state, n + 1);
-    chunk = strChr != null && n > 0 ? strChr + '+ ( ' + chunk + ' ) +' + strChr : chunk;
+
+    var stripTransforms = function stripTransforms(str) {
+      str = str || '';
+      return str.indexOf(':') == 0 && str.indexOf(';') > 0 ? str.substr(str.indexOf(';') + 1) : str;
+    };
+
+    chunk = strChr != null && n > 0 ? strChr + '+ ( ' + stripTransforms(chunk) + ' ) +' + strChr : chunk;
     if (n > 0) return $ngine.interpolate(str.substr(0, start - 1) + chunk + str.substr(stop), evalFunc, line, state, n + 1); //console.log('eval', chunk);
 
     var t = str.substr(0, start - 1) + evalFunc(chunk, line, state) + str.substr(stop);
@@ -590,4 +596,4 @@ window.$ngine = {
 };
 window.$ngine.loadConfig('ngine.json');
 
-window.$ngine.version = "0.5.11";
+window.$ngine.version = "0.5.12";
