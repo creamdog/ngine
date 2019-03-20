@@ -369,7 +369,7 @@ window.$ngine = {
 
     var transformFunctions = {
       '!': function _(str) {
-        return str.replace(/[&]/ig, '&amp;').replace(/[<]/ig, '&lt;').replace(/[>]/ig, '&gt;').replace(/\$/ig, '&#36;');
+        return str.replace(/[&]/ig, '&amp;').replace(/[<]/ig, '&lt;').replace(/[>]/ig, '&gt;').replace(/\$/ig, '&#36;').replace(/"/ig, '&quot;');
       },
       'e': function e(str) {
         return encodeURIComponent(str);
@@ -596,4 +596,4 @@ window.$ngine = {
 };
 window.$ngine.loadConfig('ngine.json');
 
-window.$ngine.version = "0.5.12";
+window.$ngine.version = "0.5.13";

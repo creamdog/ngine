@@ -338,7 +338,8 @@ window.$ngine = {
 				return str.replace(/[&]/ig, '&amp;')
 				.replace(/[<]/ig, '&lt;')
 				.replace(/[>]/ig, '&gt;')
-				.replace(/\$/ig, '&#36;');
+				.replace(/\$/ig, '&#36;')
+				.replace(/"/ig, '&quot;');
 			},
 			'e' : function(str) {
 				return encodeURIComponent(str);
