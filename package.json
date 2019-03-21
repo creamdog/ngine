@@ -1,6 +1,6 @@
 {
   "name": "ngine",
-  "version": "0.5.15",
+  "version": "0.5.16",
   "description": "just templating",
   "main": "app.js",
   "directories": {

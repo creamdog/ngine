@@ -240,8 +240,6 @@ window.$ngine = {
 
 			var target = document.createElement('div');
 
-			console.log(id, $ngine.cache[id]);
-
 			if(!t.parentNode) {
 				return console.log('ngine: no parent node', $ngine.cache[id]);
 			}

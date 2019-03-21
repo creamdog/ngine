@@ -265,7 +265,6 @@ window.$ngine = {
       }
 
       var target = document.createElement('div');
-      console.log(id, $ngine.cache[id]);
 
       if (!t.parentNode) {
         return console.log('ngine: no parent node', $ngine.cache[id]);
@@ -622,4 +621,4 @@ window.$ngine = {
 };
 window.$ngine.loadConfig('ngine.json');
 
-window.$ngine.version = "0.5.15";
+window.$ngine.version = "0.5.16";
