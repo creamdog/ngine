@@ -221,10 +221,13 @@ window.$ngine = {
 	},
 	reload: function(id) {
 
+		if(typeof $ngine.cache[id] == 'undefined') {
+			return console.log('ngine: no cache id matching', id);
+		}
+
 		const model = $ngine.cache[id].model;
 
 		const getModel = (typeof model == 'function' ? (c) => { model(c); } : (typeof model == 'string' ? (c) => { $ngine.load(model, c, id, true); } : (c) => { c(model); } ));
-
 
 		$ngine.render($ngine.cache[id].url, getModel, (result, newId) => {
 			
@@ -237,11 +240,21 @@ window.$ngine = {
 
 			var target = document.createElement('div');
 
+			console.log(id, $ngine.cache[id]);
+
+			if(!t.parentNode) {
+				return console.log('ngine: no parent node', $ngine.cache[id]);
+			}
+			
 			t.parentNode.insertBefore(target, t);
+
 			for(var i=0;i<$ngine.cache[id].elements.length;i++) {
 				const e = $ngine.cache[id].elements[i];
 				if(e.parentNode) e.parentNode.removeChild(e);
 			}
+
+			delete $ngine.cache[id];
+
 			$ngine.apply(target, newId, result);		
 		});
 	},
@@ -260,11 +273,11 @@ window.$ngine = {
 			}	
 			for(let i=0;i<$ngine.cache[id].elements.length;i++) {
 				const node = $ngine.cache[id].elements[i];
-				node.parentNode.removeChild(node);
-				target.parentNode.insertBefore(node, target);
+				if(node.parentNode) node.parentNode.removeChild(node);
+				if(target.parentNode) target.parentNode.insertBefore(node, target);
 			}
 
-			target.parentNode.removeChild(target);
+			if(target.parentNode) target.parentNode.removeChild(target);
 
 			// eval all scripts
 

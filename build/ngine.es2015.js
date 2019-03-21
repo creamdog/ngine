@@ -244,6 +244,10 @@ window.$ngine = {
     req.send();
   },
   reload: function reload(id) {
+    if (typeof $ngine.cache[id] == 'undefined') {
+      return console.log('ngine: no cache id matching', id);
+    }
+
     var model = $ngine.cache[id].model;
     var getModel = typeof model == 'function' ? function (c) {
       model(c);
@@ -261,6 +265,12 @@ window.$ngine = {
       }
 
       var target = document.createElement('div');
+      console.log(id, $ngine.cache[id]);
+
+      if (!t.parentNode) {
+        return console.log('ngine: no parent node', $ngine.cache[id]);
+      }
+
       t.parentNode.insertBefore(target, t);
 
       for (var i = 0; i < $ngine.cache[id].elements.length; i++) {
@@ -268,6 +278,7 @@ window.$ngine = {
         if (e.parentNode) e.parentNode.removeChild(e);
       }
 
+      delete $ngine.cache[id];
       $ngine.apply(target, newId, result);
     });
   },
@@ -287,11 +298,11 @@ window.$ngine = {
 
       for (var _i = 0; _i < $ngine.cache[id].elements.length; _i++) {
         var node = $ngine.cache[id].elements[_i];
-        node.parentNode.removeChild(node);
-        target.parentNode.insertBefore(node, target);
+        if (node.parentNode) node.parentNode.removeChild(node);
+        if (target.parentNode) target.parentNode.insertBefore(node, target);
       }
 
-      target.parentNode.removeChild(target); // eval all scripts
+      if (target.parentNode) target.parentNode.removeChild(target); // eval all scripts
 
       var scripts = $ngine.cache[id].elements.filter(function (element) {
         return element.nodeName == 'SCRIPT';
@@ -611,4 +622,4 @@ window.$ngine = {
 };
 window.$ngine.loadConfig('ngine.json');
 
-window.$ngine.version = "0.5.14";
+window.$ngine.version = "0.5.15";
